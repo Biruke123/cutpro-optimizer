@@ -1,0 +1,12 @@
+flask
+flask-cors
+pymongo
+dnspython
+python-dotenv
+certifi
+bcrypt
+pyjwt
+ezdxf
+rectpack
+gunicorn
+werkzeug
