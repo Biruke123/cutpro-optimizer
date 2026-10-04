@@ -284,66 +284,11 @@ def api_status():
 
 @app.route('/api/download-cutpro', methods=['GET'])
 def download_cutpro():
-    """Serves the CutPro installation package for download."""
-    import sys as _sys
-    try:
-        candidates = []
-
-        # 1. PyInstaller temp extraction folder
-        if hasattr(_sys, '_MEIPASS'):
-            candidates.append(os.path.join(_sys._MEIPASS, PACKAGE_NAME))
-            candidates.append(os.path.join(_sys._MEIPASS, 'dist', PACKAGE_NAME))
-            candidates.append(os.path.join(_sys._MEIPASS, 'frontend', PACKAGE_NAME))
-
-        # 2. Folder that contains backend.py
-        here = os.path.dirname(os.path.abspath(__file__))
-        candidates.append(os.path.join(here, PACKAGE_NAME))
-        candidates.append(os.path.join(here, 'dist', PACKAGE_NAME))
-
-        # 3. Folder next to the .exe
-        if getattr(_sys, 'frozen', False):
-            exe_dir = os.path.dirname(_sys.executable)
-            candidates.append(os.path.join(exe_dir, PACKAGE_NAME))
-
-        # 4. Current working directory
-        candidates.append(os.path.join(os.getcwd(), PACKAGE_NAME))
-
-        # 5. Parent of here
-        candidates.append(os.path.join(os.path.dirname(here), PACKAGE_NAME))
-
-        # Find first existing file
-        package_file = None
-        for c in candidates:
-            print(f"    checking: {c}")
-            if os.path.exists(c):
-                package_file = c
-                break
-
-        print(f" Download requested: {PACKAGE_NAME}")
-        print(f"   _MEIPASS = {getattr(_sys, '_MEIPASS', 'N/A')}")
-        print(f"   frozen   = {getattr(_sys, 'frozen', False)}")
-        print(f"   here     = {here}")
-        print(f"   cwd      = {os.getcwd()}")
-        print(f"   found    = {package_file}")
-
-        if not package_file:
-            return jsonify({
-                'error': 'Package not available',
-                'message': f'{PACKAGE_NAME} not found.',
-                'debug_candidates': candidates,
-            }), 404
-
-        base_dir = os.path.dirname(package_file)
-        return send_from_directory(
-            base_dir,
-            PACKAGE_NAME,
-            as_attachment=True,
-            download_name='CutPro_v3.0.zip'
-        )
-
-    except Exception as e:
-        logger.error(f" Download error: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+    """Redirects to the CutPro package hosted on GitHub Releases."""
+    from flask import redirect
+    GITHUB_RELEASE_URL = 'https://github.com/Biruke123/cutpro-optimizer/releases/download/v3.0/CutPro_v3.0.zip'
+    print(f"📥 Download requested → redirecting to GitHub Releases")
+    return redirect(GITHUB_RELEASE_URL, code=302)
 
 # ============================================
 # ADAPTIVE SHEET SIZING & PACKING

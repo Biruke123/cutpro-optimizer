@@ -2292,7 +2292,9 @@ body.installed-mode .nav-item[data-section="download"] {
                 Fewer sheets, zero overlaps, and automatic veneer length calculation.
             </p>
             <div class="dl-hero-buttons">
-                <a href="/api/download-cutpro" download="CutPro_v3.0.zip" class="btn-dl-primary">
+                <a href="javascript:void(0)" onclick="downloadCutPro()" class="btn btn-primary" style="padding: 12px 24px; font-size: 1rem; text-decoration: none; cursor: pointer;">
+                       ⬇️ Download CutPro v3.0
+                </a>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="7 10 12 15 17 10"/>
@@ -4542,6 +4544,15 @@ setInterval(function() {
                 item.classList.add('open');
             }
         }
+
+function downloadCutPro() {
+    var link = document.createElement('a');
+    link.href = API_URL + '/download-cutpro';
+    link.download = 'CutPro_v3.0.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 
         // Smooth scroll to FAQ when clicking "How to install"
         // (uses the native anchor #faqSection, no JS needed)
