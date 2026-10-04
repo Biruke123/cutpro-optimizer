@@ -14,7 +14,7 @@ module CutPro
   module Scatter
     
     VERSION = '3.7.0'
-    BACKEND_URL = 'http://localhost:5000'
+    BACKEND_URL = 'https://cutpro-optimizer.onrender.com'
     MIN_PANEL_FACE_MM = 30
     MAX_3D_THICKNESS_MM = 50
     
