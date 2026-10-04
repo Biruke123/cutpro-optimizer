@@ -35,6 +35,31 @@ import bcrypt
 import jwt
 from functools import wraps
 
+
+# ============================================
+# OPTIONAL LIBRARY DETECTION
+# ============================================
+print('📦 Loading libraries...')
+try:
+    import ezdxf
+    EZDXF_AVAILABLE = True
+    print('✅ ezdxf loaded')
+except ImportError:
+    EZDXF_AVAILABLE = False
+    print('❌ ezdxf not installed')
+
+try:
+    import ifcopenshell
+    IFCOPENSHELL_AVAILABLE = True
+    print('✅ ifcopenshell loaded')
+except ImportError:
+    IFCOPENSHELL_AVAILABLE = False
+    print('❌ ifcopenshell not installed')
+    
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -56,6 +81,7 @@ PACKAGE_NAME = 'CutPro_v3.0.zip'
 # MONGODB (persistent storage)
 # ============================================
 from mongo_config import users_col, history_col, skp_col
+
 
 def token_required(f):
     @wraps(f)
