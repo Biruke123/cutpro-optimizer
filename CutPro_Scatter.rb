@@ -1,8 +1,8 @@
 # ============================================
-# CutPro Scatter v3.7.0 — Final Production Version
-# - Simplest veneer detection (any blue = veneer)
-# - Auto-calculates length by part type
-# - Pure length, no width needed
+# CutPro Scatter v3.8.0 — Final Production Version
+# - Blue face = veneer
+# - Brown material = Oak, else = MDF
+# - Auto-calculates veneer length by part type
 # ============================================
 
 require 'sketchup.rb'
@@ -12,34 +12,73 @@ require 'json'
 
 module CutPro
   module Scatter
-    
-    VERSION = '3.7.0'
+
+    VERSION = '3.8.0'
     BACKEND_URL = 'https://cutpro-optimizer.onrender.com'
     MIN_PANEL_FACE_MM = 30
     MAX_3D_THICKNESS_MM = 50
-    
+
     # ============================================
     # 🎨 BLUE COLOR DETECTION
     # ============================================
     def self.is_blue?(color)
       return false if color.nil?
-      
       r = color.red
       g = color.green
       b = color.blue
-      
-      # Blue: high B channel, low R and G
       return b > 180 && r < 150 && g < 200
     end
-    
+
+    # ============================================
+    # 🎨 BROWN COLOR DETECTION (for Oak material)
+    # ============================================
+    def self.is_brown?(color)
+      return false if color.nil?
+      r = color.red
+      g = color.green
+      b = color.blue
+      return (r > 100 && r < 220 &&
+              g > 50  && g < 160 &&
+              b < 100 &&
+              r > g && g > b)
+    end
+
+    # ============================================
+    # 🎯 DETECT MATERIAL (Brown → Oak, else → MDF)
+    # ============================================
+    def self.detect_material(part)
+      color = nil
+
+      # Try group's own material first
+      if part.respond_to?(:material) && part.material
+        color = part.material.color
+      end
+
+      # If no group material, check the first painted face
+      if color.nil? && part.respond_to?(:entities)
+        begin
+          faces = part.entities.grep(Sketchup::Face)
+          faces.each do |face|
+            if face.material && !is_blue?(face.material.color)
+              color = face.material.color
+              break
+            end
+          end
+        rescue
+          # ignore
+        end
+      end
+
+      return 'MDF' if color.nil?
+      is_brown?(color) ? 'Oak' : 'MDF'
+    end
+
     # ============================================
     # 🎯 SIMPLE VENEER DETECTION
-    # If ANY face is blue → veneer needed
     # ============================================
     def self.has_any_blue?(part)
       begin
         faces = part.entities.grep(Sketchup::Face)
-        
         faces.each do |face|
           if face.material && is_blue?(face.material.color)
             return true
@@ -48,33 +87,26 @@ module CutPro
             return true
           end
         end
-        
         return false
       rescue => e
         return false
       end
     end
-    
+
     # ============================================
     # 🎯 CALCULATE VENEER LENGTH BY PART TYPE
     # ============================================
     def self.calc_veneer_length(part_type, big_dim, mid_dim)
-      """
-      Calculate the total edge length that needs veneer:
-        - DOOR/DRAWER: 4 sides = 2 × (width + height)
-        - SHELF/SIDE_PANEL: 1 side (front edge) = width
-      """
       case part_type
       when "DOOR", "DRAWER"
-        return 2 * (big_dim + mid_dim)
+        return 2 * (big_dim + mid_dim)   # 4 sides
       when "SHELF", "SIDE_PANEL", "TALL_PANEL", "TOE_KICK", "COUNTERTOP"
-        return big_dim
+        return big_dim                    # 1 side (front)
       else
-        # Default: 4 sides
-        return 2 * (big_dim + mid_dim)
+        return 2 * (big_dim + mid_dim)   # default 4 sides
       end
     end
-    
+
     # ============================================
     # OPEN CUTPRO WEBSITE
     # ============================================
@@ -82,13 +114,13 @@ module CutPro
       UI.openURL(BACKEND_URL)
       puts "🌐 Opened CutPro: #{BACKEND_URL}"
     end
-    
+
     # ============================================
     # MAIN FUNCTION
     # ============================================
     def self.scatter_and_send
       model = Sketchup.active_model
-      
+
       # Check file saved
       original_path = model.path
       if original_path.nil? || original_path.empty?
@@ -99,10 +131,10 @@ module CutPro
         )
         return
       end
-      
+
       # Check backend
       backend_ok = check_backend
-      
+
       if !backend_ok
         result = UI.messagebox(
           "⚠️ CutPro backend is NOT running!\n\n" +
@@ -113,27 +145,29 @@ module CutPro
         )
         return if result != IDYES
       end
-      
+
       # Permission
       permission = UI.messagebox(
         "📦 CutPro Scatter v#{VERSION}\n\n" +
         "This will:\n" +
         "  1. Create a SAFE copy of your file\n" +
         "  2. Detect BLUE painted parts (veneer)\n" +
-        "  3. Scatter all parts\n" +
-        "  4. Send to CutPro\n" +
-        "  5. Open browser\n\n" +
-        "🎨 Paint any face of a part BLUE\n" +
-        "   and it will get veneer.\n\n" +
+        "  3. Detect material (Brown=Oak, else=MDF)\n" +
+        "  4. Scatter all parts\n" +
+        "  5. Send to CutPro\n" +
+        "  6. Open browser\n\n" +
+        "🎨 Paint any face of a part BLUE → veneer.\n" +
+        "🟤 Paint part BROWN → Oak.\n" +
+        "⚪ No paint → MDF.\n\n" +
         "Continue?",
         MB_YESNO
       )
       return if permission != IDYES
-      
+
       # Create numbered copy
       dir = File.dirname(original_path)
       base = File.basename(original_path, '.skp')
-      
+
       copy_num = 1
       copy_path = nil
       loop do
@@ -144,7 +178,7 @@ module CutPro
         end
         copy_num += 1
       end
-      
+
       confirm = UI.messagebox(
         "📁 Original (SAFE):\n" +
         "   #{File.basename(original_path)}\n\n" +
@@ -154,156 +188,169 @@ module CutPro
         MB_YESNO
       )
       return if confirm != IDYES
-      
+
       # Save original then copy
       model.save(original_path) if model.modified?
       result = model.save(copy_path)
-      
+
       if result == false
         UI.messagebox("❌ Failed to create copy!")
         return
       end
-      
+
       puts "=" * 60
       puts "✅ SAFE COPY CREATED"
       puts "Working: #{File.basename(copy_path)}"
       puts "=" * 60
-      
+
       # Collect parts
       UI.messagebox("🔍 Scanning model for parts...")
-      
+
       all_parts = []
       collect_all_parts(model.entities, all_parts, 0)
-      
+
       if all_parts.empty?
         UI.messagebox("❌ No parts found!")
         return
       end
-      
+
       # Scatter + veneer detection
       model.start_operation("CutPro Scatter", true)
-      
+
       grid_columns = 10
       spacing = 5000.mm
-      
+
       parts_data = []
       scattered_count = 0
       veneer_count = 0
       non_veneer_count = 0
+      oak_count = 0
+      mdf_count = 0
       total_blue_mm = 0
-      
+
       all_parts.each_with_index do |part, index|
         begin
           bbox = part.bounds
           next if bbox.nil? || bbox.empty?
-          
+
           width_mm = bbox.width.to_mm.round(1)
           height_mm = bbox.height.to_mm.round(1)
           depth_mm = bbox.depth.to_mm.round(1)
-          
+
           sorted_dims = [width_mm, height_mm, depth_mm].sort
           thin_dim = sorted_dims[0]
           mid_dim = sorted_dims[1]
           big_dim = sorted_dims[2]
-          
+
           # Filters
           next if mid_dim < MIN_PANEL_FACE_MM
           next if big_dim < MIN_PANEL_FACE_MM
           next if thin_dim > MAX_3D_THICKNESS_MM
           next if big_dim > 3000
           next if mid_dim > 2500 && big_dim > 2500
-          
+
           # Detect part type
           part_type = detect_part_type(big_dim, mid_dim, thin_dim)
           next if part_type == 'SOLID_PIECE'
-          
-          # 🎯 CHECK IF PART IS BLUE (SIMPLE!)
+
+          # Check if part is blue (veneer)
           has_veneer = has_any_blue?(part)
-          
+
           veneer_sides = 0
           veneer_length_mm = 0
-          
+
           if has_veneer
-            veneer_sides = 4  # Default
+            veneer_sides = 4
             veneer_length_mm = calc_veneer_length(part_type, big_dim, mid_dim)
             veneer_count += 1
             total_blue_mm += veneer_length_mm
           else
             non_veneer_count += 1
           end
-          
+
+          # Detect material
+          material = detect_material(part)
+          if material == 'Oak'
+            oak_count += 1
+          else
+            mdf_count += 1
+          end
+
           # Position in grid
           row = scattered_count / grid_columns
           col = scattered_count % grid_columns
-          
+
           target_x = col * spacing
           target_y = row * spacing
           target_z = 0
-          
+
           current_center = bbox.center
           target_point = Geom::Point3d.new(target_x, target_y, target_z)
           translation = target_point - current_center
           transform = Geom::Transformation.translation(translation)
-          
+
           if part.is_a?(Sketchup::Group) || part.is_a?(Sketchup::ComponentInstance)
             part.transform!(transform)
           end
-          
+
           # Rename
           veneer_tag = has_veneer ? "_V" : ""
           part.name = "PART_#{scattered_count + 1}_#{part_type}#{veneer_tag}"
-          
+
           # Collect
           parts_data << {
             width: big_dim,
             height: mid_dim,
             depth: thin_dim,
-            material: '18mm Birch Plywood',
+            material: material,
             label: part_type.gsub('_', ' '),
             qty: 1,
             veneer_edges: veneer_sides,
             veneer_length_mm: veneer_length_mm,
             has_veneer: has_veneer
           }
-          
+
           scattered_count += 1
-          
+
         rescue => e
           puts "⚠️ Skipped part #{index}: #{e.message}"
           next
         end
       end
-      
+
       model.commit_operation
       model.save(copy_path)
-      
+
       total_blue_m = (total_blue_mm / 1000.0).round(2)
-      
+
       puts ""
       puts "=" * 60
       puts "✅ SCATTER COMPLETE"
       puts "=" * 60
       puts "Total panels:     #{scattered_count}"
+      puts "🟤 Oak:           #{oak_count}"
+      puts "⚪ MDF:           #{mdf_count}"
       puts "🎨 Veneer parts:  #{veneer_count}"
-      puts "⚪ Non-veneer:    #{non_veneer_count}"
       puts "📏 Total length:  #{total_blue_m}m"
       puts "=" * 60
-      
+
       # Send to backend
       sent = false
       if backend_ok && parts_data.length > 0
         sent = send_to_backend(parts_data)
       end
-      
+
       if sent
         sleep(0.5)
         open_web_app()
       end
-      
+
       if sent
         UI.messagebox(
           "🎉 SUCCESS!\n\n" +
           "📊 Panels scattered: #{scattered_count}\n" +
+          "🟤 Oak parts:       #{oak_count}\n" +
+          "⚪ MDF parts:       #{mdf_count}\n" +
           "🎨 Veneer parts:    #{veneer_count}\n" +
           "📏 Total length:    #{total_blue_m}m\n\n" +
           "🌐 Browser opening now..."
@@ -312,11 +359,11 @@ module CutPro
         UI.messagebox("✅ Panels scattered: #{scattered_count}")
       end
     end
-    
+
     # ============================================
     # HELPERS
     # ============================================
-    
+
     def self.collect_all_parts(entities, collection, depth)
       return if depth > 20
       entities.each do |entity|
@@ -333,10 +380,10 @@ module CutPro
         end
       end
     end
-    
+
     def self.detect_part_type(big_dim, mid_dim, thin_dim)
       return "SOLID_PIECE" if thin_dim > 50
-      
+
       if big_dim > 1500 && mid_dim > 400 && mid_dim < 700
         return "SIDE_PANEL"
       elsif big_dim > 1500 && mid_dim > 300
@@ -351,7 +398,7 @@ module CutPro
         return "SMALL_PART"
       end
     end
-    
+
     def self.check_backend
       begin
         uri = URI.parse("#{BACKEND_URL}/api/status")
@@ -364,18 +411,18 @@ module CutPro
         false
       end
     end
-    
+
     def self.send_to_backend(parts_data)
       begin
         uri = URI.parse("#{BACKEND_URL}/api/parts-from-sketchup")
         http = Net::HTTP.new(uri.host, uri.port)
         http.open_timeout = 5
         http.read_timeout = 30
-        
+
         request = Net::HTTP::Post.new(uri.path)
         request['Content-Type'] = 'application/json'
         request.body = { parts: parts_data }.to_json
-        
+
         response = http.request(request)
         puts "📥 Response: #{response.code}"
         response.code == '200'
@@ -384,7 +431,7 @@ module CutPro
         false
       end
     end
-    
+
   end
 end
 
@@ -393,13 +440,13 @@ end
 # ============================================
 unless file_loaded?(__FILE__)
   submenu = UI.menu('Plugins').add_submenu('📐 CutPro')
-  
+
   submenu.add_item('🚀 Scatter & Send to CutPro') {
     CutPro::Scatter.scatter_and_send
   }
-  
+
   submenu.add_separator
-  
+
   submenu.add_item('🎨 How to Mark Veneer') {
     UI.messagebox(
       "🎨 HOW TO MARK VENEER\n\n" +
@@ -410,11 +457,13 @@ unless file_loaded?(__FILE__)
       "  DOOR → veneer on 4 sides\n" +
       "  SHELF → veneer on 1 side\n" +
       "  DRAWER → veneer on 4 sides\n\n" +
-      "Just paint one face blue\n" +
-      "and CutPro does the rest!"
+      "MATERIAL DETECTION:\n" +
+      "  🟤 Brown part → Oak\n" +
+      "  ⚪ Other → MDF\n\n" +
+      "Just paint and CutPro does the rest!"
     )
   }
-  
+
   submenu.add_item('🔍 Check CutPro Status') {
     if CutPro::Scatter.check_backend
       UI.messagebox("✅ CutPro backend is RUNNING")
@@ -422,21 +471,21 @@ unless file_loaded?(__FILE__)
       UI.messagebox("❌ CutPro backend NOT running")
     end
   }
-  
+
   submenu.add_item('🌐 Open CutPro Website') {
     CutPro::Scatter.open_web_app
   }
-  
+
   submenu.add_separator
-  
+
   submenu.add_item('ℹ️ About CutPro') {
     UI.messagebox("📐 CutPro v#{CutPro::Scatter::VERSION}")
   }
-  
+
   file_loaded(__FILE__)
 end
 
 puts "=" * 60
 puts "✅ CutPro v#{CutPro::Scatter::VERSION} loaded"
-puts "🎨 Simple blue detection"
+puts "🎨 Blue detection + Brown=Oak / else=MDF"
 puts "=" * 60
