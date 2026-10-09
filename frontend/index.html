@@ -2337,7 +2337,7 @@ body.installed-mode .nav-item[data-section="download"] {
 
                 <!-- Settings -->
                 <div class="card">
-                    <h3>⚙️ Settings</h3>
+                    <h3> Settings</h3>
                     <div class="settings-grid">
                         <div class="setting-group">
                             <label>Sheet Width</label>
@@ -3841,19 +3841,33 @@ function addPart(length, width, qty, material, label) {
             document.getElementById('globalKerf').textContent = parseFloat(document.getElementById('kerf').value).toFixed(1);
             showResult('optimizeResult', '⏳ Optimizing ' + parts.length + ' parts...', 'loading');
             var partsData = parts.map(function(p) {
-                return {
-                    length: p.length,
-                    width: p.width,
-                    qty: p.qty,
-                    material: p.material || 'MDF',
-                    label: p.label || 'Part',
-                    veneer_sides: p.veneer_sides || 0,
-                    veneer_edge_count: p.veneer_edge_count || 0,
-                    veneer_length_mm: p.veneer_length_mm || 0,
-                    has_veneer: p.has_veneer || false
-                   
-                };
-            });
+            var hasVeneer = p.has_veneer || (p.veneer_edge_count > 0) || false;
+            var vLen = p.veneer_length_mm || 0;
+    
+    // If has_veneer is true but length is 0, compute from edge_bands
+            if (hasVeneer && vLen <= 0 && p.edge_bands) {
+                var eb = p.edge_bands;
+                var total = 0;
+                if (eb.top && eb.top !== 'none')    total += p.width;
+                if (eb.bottom && eb.bottom !== 'none') total += p.width;
+                if (eb.left && eb.left !== 'none')  total += p.length;
+                if (eb.right && eb.right !== 'none') total += p.length;
+                vLen = total;
+            }
+    
+            return {
+                length: p.length,
+                width: p.width,
+                qty: p.qty,
+                material: p.material || 'MDF',
+                label: p.label || 'Part',
+                veneer_sides: p.veneer_sides || 0,
+                veneer_edge_count: p.veneer_edge_count || 0,
+                veneer_length_mm: vLen,
+                has_veneer: hasVeneer
+            };
+        });
+
             fetch(API_URL + '/optimize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -4327,12 +4341,12 @@ function displayVeneerResults(data) {
     html += '<div style="background:#e3f2fd;padding:14px;border-radius:8px;text-align:center;border:2px solid #2196F3;">';
     html += '<div style="font-size:0.7rem;color:#1565c0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">🎨 Veneer Parts</div>';
     html += '<div style="font-size:2rem;font-weight:700;color:#1565c0;">' + (data.veneer_parts_count || 0) + '</div>';
-    html += '<div style="font-size:0.7rem;color:#1565c0;margin-top:2px;">blue-marked parts</div>';
+    html += '<div style="font-size:0.7rem;color:#1565c0;margin-top:2px;">total physical parts</div>';
     html += '</div>';
     html += '<div style="background:#f5f5f5;padding:14px;border-radius:8px;text-align:center;border:2px solid #9e9e9e;">';
     html += '<div style="font-size:0.7rem;color:#616161;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">⚪ Non-Veneer Parts</div>';
     html += '<div style="font-size:2rem;font-weight:700;color:#616161;">' + (data.non_veneer_parts_count || 0) + '</div>';
-    html += '<div style="font-size:0.7rem;color:#616161;margin-top:2px;">standard parts</div>';
+    html += '<div style="font-size:0.7rem;color:#616161;margin-top:2px;">total physical parts</div>';
     html += '</div>';
     html += '</div>';
     
@@ -4357,7 +4371,7 @@ function displayVeneerResults(data) {
     // 🎯 LENGTH ONLY - Veneer needed
     html += '<div class="result-item" style="background:#e8f8f5;">';
     html += '<span class="label">📏 Veneer Length Needed</span>';
-    html += '<span class="value green">' + (data.veneer_length_needed || data.roll_length || 0).toFixed(2) + ' m</span>';
+    html += '<span class="value green">' + (data.veneer_needed_m || data.total_with_waste || data.veneer_length_needed || 0).toFixed(2) + ' m</span>';
     html += '</div>';
     
     html += '</div>';
@@ -4382,7 +4396,7 @@ function displayVeneerResults(data) {
     
     // Summary
     var totalLength = data.total_edge_length || 0;
-    var veneerLength = data.veneer_length_needed || data.roll_length || 0;
+    var veneerLength = data.veneer_needed_m || data.total_with_waste || data.veneer_length_needed || 0;
     
     html += '<div class="veneer-summary">';
     html += '📋 <strong>Summary:</strong> You need ';
@@ -5389,7 +5403,8 @@ function downloadCutPro() {
         // (uses the native anchor #faqSection, no JS needed)
 
 
-        
+        console.log('📤 VENEER PARTS DATA:', partsData.filter(function(p) { return p.has_veneer; }));
+        console.log('   Total parts:', partsData.length, '| Veneer parts:', partsData.filter(function(p) { return p.has_veneer; }).length);
         console.log('🚀 CutList Optimizer Pro v3.0 loaded!');
         console.log('💡 Supports: TXT, CSV, DXF, DWG, IFC, PLN, SKP, BLEND, SVG');
         console.log('🔗 API: ' + API_URL);
