@@ -312,7 +312,7 @@ def api_status():
 def download_cutpro():
     """Redirects to the CutPro package hosted on GitHub Releases."""
     from flask import redirect
-    GITHUB_RELEASE_URL = 'https://github.com/Biruke123/cutpro-optimizer/releases/download/v3.8.1/CutPro_v3.8.zip'
+    GITHUB_RELEASE_URL = 'https://github.com/Biruke123/cutpro-optimizer/releases/download/v3.9/CutPro_v3.9.zip'
     print(f"📥 Download requested → redirecting to GitHub Releases")
     return redirect(GITHUB_RELEASE_URL, code=302)
 
