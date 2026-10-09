@@ -2031,7 +2031,201 @@ body.installed-mode .nav-item[data-section="download"] {
 }
 [data-theme="light"] .btn-dl-secondary { color: #2d3436; }
 
-    </style>
+.edge-band-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+.edge-band-row label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+    margin-bottom: 2px;
+    display: block;
+}
+.edge-band-length {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+.edge-band-row .material-select {
+    min-width: 220px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+}
+
+.edge-band-btn {
+    background: var(--info);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+.edge-band-btn.has-veneer {
+    background: var(--success);
+}
+.edge-band-btn:hover { opacity: 0.85; }
+
+
+
+/* ============================================
+   PRINT LAYOUT — one sheet per page
+============================================ */
+/* ============================================
+   PRINT LAYOUT — A4 portrait, one sheet per page
+============================================ */
+#printContainer {
+    display: none;
+}
+
+@media print {
+    body > *:not(#printContainer) { display: none !important; }
+    body { background: white !important; margin: 0 !important; padding: 0 !important; }
+    #printContainer { display: block !important; width: 100% !important; background: white; }
+
+    @page { size: A4 portrait; margin: 8mm; }
+
+    .print-sheet {
+        page-break-after: always;
+        break-after: page;
+        page-break-inside: avoid;
+        width: 194mm;
+        height: 281mm;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        font-family: Arial, sans-serif;
+        color: #000;
+        background: #fff;
+    }
+    .print-sheet:last-child { page-break-after: auto; break-after: auto; }
+
+    /* ----- TOP ROW ----- */
+    .print-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding-bottom: 6px;
+        border-bottom: 2px solid #000;
+        flex-shrink: 0;
+    }
+    .print-top-left h1 {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+        color: #000;
+    }
+    .print-top-right {
+        flex: 1;
+        margin-left: 15px;
+    }
+    .print-global-stats {
+        display: flex;
+        gap: 10px;
+    }
+    .print-global-stats .gs-col {
+        flex: 1;
+        font-size: 9px;
+    }
+    .print-global-stats .gs-col.panels-col {
+        flex: 2;
+    }
+    .print-global-stats .gs-header {
+        font-weight: 700;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+        font-size: 9px;
+        letter-spacing: 0.5px;
+    }
+    .print-global-stats .gs-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 1px 0;
+    }
+    .print-global-stats .gs-row span:first-child { color: #444; }
+    .print-global-stats .gs-row span:last-child { font-weight: 600; }
+    .print-global-stats .gs-panels-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 3px;
+        font-size: 8px;
+    }
+    .print-global-stats .panel-chip {
+        background: #f0f0f0;
+        padding: 1px 4px;
+        border: 1px solid #ccc;
+    }
+
+    /* ----- BOTTOM ROW ----- */
+    .print-bottom {
+        flex: 1;
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+        min-height: 0;
+    }
+    .print-left-col {
+        flex: 0 0 110px;
+        font-size: 7.5px;
+    }
+.print-right-col {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    min-height: 0;
+    min-width: 0;
+    padding-left: 8px;
+    box-sizing: border-box;
+}
+.print-right-col canvas {
+    display: block;
+    border: 2px solid #000;
+    /* DO NOT stretch — keep natural aspect ratio */
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+}
+
+    .plc-block {
+        margin-bottom: 8px;
+        border-top: 1px solid #333;
+        padding-top: 3px;
+    }
+    .plc-title {
+        font-weight: 700;
+        font-size: 8px;
+        margin-bottom: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .plc-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 1px 0;
+        border-bottom: 1px dotted #ccc;
+    }
+    .plc-table {
+        width: 100%;
+        font-size: 7px;
+        border-collapse: collapse;
+        line-height: 1.4;
+    }
+    .plc-table td {
+        padding: 1px 2px;
+        border-bottom: 1px dotted #e0e0e0;
+    }
+}
+
+
+</style>
 </head>
 <body>
     <!-- Sidebar -->
@@ -2096,8 +2290,8 @@ body.installed-mode .nav-item[data-section="download"] {
                     <div class="topbar-stat">
                         <span class="stat-label">Unit</span>
                         <select id="unitSelector">
+                            <option value="cm" selected>cm</option>
                             <option value="mm">mm</option>
-                            <option value="cm">cm</option>
                             <option value="in">in</option>
                         </select>
                     </div>
@@ -2190,6 +2384,7 @@ body.installed-mode .nav-item[data-section="download"] {
                         <h3>📋 Parts List</h3>
                         <div class="card-actions">
                             <button class="btn btn-sm btn-primary" id="addPartBtn">+ Add</button>
+                            <button class="btn btn-sm btn-info" onclick="mergeDuplicates()">🔗 Merge</button>
                             <button class="btn btn-sm btn-danger" id="clearPartsBtn">✕ Clear</button>
                         </div>
                     </div>
@@ -2203,6 +2398,7 @@ body.installed-mode .nav-item[data-section="download"] {
                                     <th>Qty</th>
                                     <th>Material</th>
                                     <th></th>
+                                    <th>▦</th>
                                 </tr>
                             </thead>
                             <tbody id="partsBody"></tbody>
@@ -2408,7 +2604,7 @@ body.installed-mode .nav-item[data-section="download"] {
             <span class="chev">&#9660;</span>
         </button>
         <div class="dl-faq-a">
-            Open <strong>Windows Settings &rarr; Apps &rarr; Installed apps</strong>, find <strong>CutPro v3.0</strong>,
+            Open <strong>Windows Settings &rarr; Apps &rarr; Installed apps</strong>, find <strong>CutPro v3.8</strong>,
             and click Uninstall. That removes the backend, the SketchUp plugin, and the desktop shortcut.
         </div>
     </div>
@@ -2428,7 +2624,7 @@ body.installed-mode .nav-item[data-section="download"] {
 
         <!-- Footer -->
         <footer class="footer">
-            <span>CutPro v3.0 — Material Optimization Dashboard</span>
+            <span>CutPro v3.8 — Material Optimization Dashboard</span>
             <span>Built by BLM</span>
         </footer>
     </main>
@@ -2519,6 +2715,71 @@ body.installed-mode .nav-item[data-section="download"] {
         </div>
     </div>
 
+    <!-- Edge Banding Modal -->
+    <!-- Edge Banding Modal -->
+    <div id="edgeBandModal" class="modal">
+        <div class="modal-content" style="max-width:650px;">
+            <span class="close-modal" onclick="closeEdgeBandModal()">&times;</span>
+            <h2 style="display:flex;justify-content:space-between;align-items:center;">
+                <span>Edge banding</span>
+                <span style="font-size:0.9rem;font-weight:400;color:var(--text-light);" id="edgeBandSummary">0× band</span>
+            </h2>
+            <div style="margin-top:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                    <div>
+                        <label style="font-weight:600;font-size:0.95rem;display:block;">Top edge band</label>
+                        <div id="edgeBandTopLen" style="font-size:0.8rem;color:var(--text-light);">0</div>
+                    </div>
+                    <select id="edgeBandTop" class="material-select" onchange="updateEdgeBandSummary()" style="min-width:220px;padding:10px 14px;">
+                        <option value="none">None</option>
+                        <option value="Edge band 1">Edge band 1</option>
+                        <option value="Edge band 2">Edge band 2</option>
+                        <option value="Edge band 3">Edge band 3</option>
+                    </select>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                    <div>
+                        <label style="font-weight:600;font-size:0.95rem;display:block;">Left edge band</label>
+                        <div id="edgeBandLeftLen" style="font-size:0.8rem;color:var(--text-light);">0</div>
+                    </div>
+                    <select id="edgeBandLeft" class="material-select" onchange="updateEdgeBandSummary()" style="min-width:220px;padding:10px 14px;">
+                        <option value="none">None</option>
+                        <option value="Edge band 1">Edge band 1</option>
+                        <option value="Edge band 2">Edge band 2</option>
+                        <option value="Edge band 3">Edge band 3</option>
+                    </select>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                    <div>
+                        <label style="font-weight:600;font-size:0.95rem;display:block;">Bottom edge band</label>
+                        <div id="edgeBandBottomLen" style="font-size:0.8rem;color:var(--text-light);">0</div>
+                    </div>
+                    <select id="edgeBandBottom" class="material-select" onchange="updateEdgeBandSummary()" style="min-width:220px;padding:10px 14px;">
+                        <option value="none">None</option>
+                        <option value="Edge band 1">Edge band 1</option>
+                        <option value="Edge band 2">Edge band 2</option>
+                        <option value="Edge band 3">Edge band 3</option>
+                    </select>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                    <div>
+                        <label style="font-weight:600;font-size:0.95rem;display:block;">Right edge band</label>
+                        <div id="edgeBandRightLen" style="font-size:0.8rem;color:var(--text-light);">0</div>
+                    </div>
+                    <select id="edgeBandRight" class="material-select" onchange="updateEdgeBandSummary()" style="min-width:220px;padding:10px 14px;">
+                        <option value="none">None</option>
+                        <option value="Edge band 1">Edge band 1</option>
+                        <option value="Edge band 2">Edge band 2</option>
+                        <option value="Edge band 3">Edge band 3</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-top:20px;text-align:right;">
+                <button class="btn btn-info" onclick="saveEdgeBand()">Ok</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ALL JAVASCRIPT IS EMBEDDED HERE. DELETE EXTERNAL SCRIPT.JS -->
     <script>
         // ============================================
@@ -2593,9 +2854,9 @@ body.installed-mode .nav-item[data-section="download"] {
         let currentUser = localStorage.getItem('cutpro_user');
         let currentProjectName = '';
         let pendingPartsData = null;
-        const API_URL = 'https://cutpro-optimizer.onrender.com/api';
+        const API_URL = 'http://localhost:5000/api';
         const MIN_PART_SIZE = 10;
-        let currentUnit = 'mm';
+        let currentUnit = 'cm';
 
         const UNIT_CONVERSION = {
             'mm': { factor: 1, label: 'mm', suffix: 'mm' },
@@ -2723,30 +2984,74 @@ body.installed-mode .nav-item[data-section="download"] {
                 currentProjectName = '';
             }
         }
+
+
+                function savePartsToStorage() {
+            try {
+                localStorage.setItem('cutpro_parts', JSON.stringify(parts));
+                localStorage.setItem('cutpro_partIdCounter', String(partIdCounter));
+            } catch (e) {
+                console.warn('Could not save parts to storage:', e);
+            }
+        }
+
+        function loadPartsFromStorage() {
+            try {
+                var saved = localStorage.getItem('cutpro_parts');
+                var counter = localStorage.getItem('cutpro_partIdCounter');
+                if (saved) {
+                    parts = JSON.parse(saved);
+                    partIdCounter = counter ? parseInt(counter) : parts.length;
+                    return true;
+                }
+            } catch (e) {
+                console.warn('Could not load parts from storage:', e);
+            }
+            return false;
+        }
+
+
                 // ============================================
         // PARTS MANAGEMENT
         // ============================================
-        function addPart(length, width, qty, material, label) {
-            length = length || 600;
-            width = width || 400;
-            qty = qty || 1;
-            material = material || '18mm Birch Plywood';
-            label = label || 'Part';
-            
-            if (length < MIN_PART_SIZE || width < MIN_PART_SIZE) return;
-            
-            parts.push({ 
-                id: ++partIdCounter, 
-                length: length, 
-                width: width, 
-                qty: qty, 
-                material: material, 
-                label: label 
-            });
-            renderParts();
-            updateSummary();
-            hideMaterialOverride();
-        }
+function addPart(length, width, qty, material, label) {
+    length = length || 600;
+    width = width || 400;
+    qty = qty || 1;
+    material = material || 'MDF';
+    label = label || 'Part';
+
+    if (length < MIN_PART_SIZE || width < MIN_PART_SIZE) return;
+
+    var roundedLength = Math.round(length);
+    var roundedWidth = Math.round(width);
+
+    var existing = parts.find(function(p) {
+        return Math.round(p.length) === roundedLength &&
+               Math.round(p.width) === roundedWidth &&
+               p.material === material &&
+               p.label === label;
+    });
+
+    if (existing) {
+        existing.qty += qty;
+    } else {
+        parts.push({
+            id: ++partIdCounter,
+            length: roundedLength,
+            width: roundedWidth,
+            qty: qty,
+            material: material,
+            label: label
+        });
+    }
+
+    
+    renderParts();
+    updateSummary();
+    hideMaterialOverride();
+    savePartsToStorage();
+}
 
         function removePart(id) {
             parts = parts.filter(function(p) { return p.id !== id; });
@@ -2772,35 +3077,38 @@ body.installed-mode .nav-item[data-section="download"] {
         function renderParts() {
             if (!partsBody) return;
             partsBody.innerHTML = '';
-            
-            parts.forEach(function(part, index) {
+
+            parts.forEach(function(p, index) {
                 var tr = document.createElement('tr');
-                var displayLength = getDisplayValue(part.length, currentUnit);
-                var displayWidth = getDisplayValue(part.width, currentUnit);
-                
-                tr.innerHTML = 
+                var displayLength = getDisplayValue(p.length, currentUnit);
+                var displayWidth = getDisplayValue(p.width, currentUnit);
+
+                var ebClass = (p.has_veneer || p.veneer_edge_count > 0) ? ' has-veneer' : '';
+
+                tr.innerHTML =
                     '<td>' + (index + 1) + '</td>' +
-                    '<td><input type="number" class="part-width" value="' + displayLength + '" min="0.1" step="0.1" data-id="' + part.id + '"></td>' +
-                    '<td><input type="number" class="part-length" value="' + displayWidth + '" min="0.1" step="0.1" data-id="' + part.id + '"></td>' +
-                    '<td><input type="number" class="part-qty" value="' + part.qty + '" min="1" data-id="' + part.id + '"></td>' +
-                    '<td><input type="text" class="part-material" value="' + (part.material || '18mm Birch Plywood') + '" data-id="' + part.id + '"></td>' +
-                    '<td><input type="text" class="part-label" value="' + (part.label || 'Part') + '" data-id="' + part.id + '" style="max-width:80px;"></td>' +
-                    '<td><button class="remove-btn" onclick="removePart(' + part.id + ')">✕</button></td>';
-                
+                    '<td><input type="number" class="part-width" value="' + displayLength + '" min="0.1" step="0.1" data-id="' + p.id + '"></td>' +
+                    '<td><input type="number" class="part-length" value="' + displayWidth + '" min="0.1" step="0.1" data-id="' + p.id + '"></td>' +
+                    '<td><input type="number" class="part-qty" value="' + p.qty + '" min="1" data-id="' + p.id + '"></td>' +
+                    '<td><input type="text" class="part-material" value="' + (p.material || 'MDF') + '" data-id="' + p.id + '"></td>' +
+                    '<td><input type="text" class="part-label" value="' + (p.label || 'Part') + '" data-id="' + p.id + '" style="max-width:80px;"></td>' +
+                    '<td><button class="edge-band-btn' + ebClass + '" onclick="openEdgeBandModal(' + p.id + ')" title="Edge Banding">▦</button></td>' +
+                    '<td><button class="remove-btn" onclick="removePart(' + p.id + ')">✕</button></td>';
+
                 var inputs = tr.querySelectorAll('input');
                 inputs.forEach(function(input) {
                     input.addEventListener('input', function() {
                         var id = parseInt(this.dataset.id);
-                        var p = parts.find(function(p) { return p.id === id; });
-                        if (p) {
+                        var part = parts.find(function(x) { return x.id === id; });
+                        if (part) {
                             var field = this.className.split('-')[1];
                             if (field === 'length' || field === 'width' || field === 'qty') {
                                 var val = parseFloat(this.value) || 0;
-                                if (field === 'length') p.length = convertToUnit(val, currentUnit, 'mm');
-                                else if (field === 'width') p.width = convertToUnit(val, currentUnit, 'mm');
-                                else p[field] = val;
+                                if (field === 'length') part.length = convertToUnit(val, currentUnit, 'mm');
+                                else if (field === 'width') part.width = convertToUnit(val, currentUnit, 'mm');
+                                else part[field] = val;
                             } else {
-                                p[field] = this.value;
+                                part[field] = this.value;
                             }
                             updateSummary();
                         }
@@ -3586,6 +3894,7 @@ body.installed-mode .nav-item[data-section="download"] {
         // ============================================
 
         function displayProfessionalResults(data) {
+            window.lastOptimizationData = data;
             var container = document.getElementById('resultsContent');
             console.log('📊 displayProfessionalResults called with:', data);
             if (!data) {
@@ -3746,10 +4055,12 @@ function drawCuttingDiagram(data) {
             });
         }
     });
+
     if (!allSheets || allSheets.length === 0) {
         var warningCanvas = document.createElement('canvas');
         warningCanvas.id = 'cuttingCanvas';
-        warningCanvas.width = 800; warningCanvas.height = 200;
+        warningCanvas.width = 800;
+        warningCanvas.height = 200;
         warningCanvas.style.width = '100%';
         warningCanvas.style.border = '1px solid #d0d0d0';
         warningCanvas.style.background = '#ffffff';
@@ -3759,121 +4070,175 @@ function drawCuttingDiagram(data) {
         warnCtx.font = 'bold 20px Arial';
         warnCtx.textAlign = 'center';
         warnCtx.textBaseline = 'middle';
-        warnCtx.fillText("⚠️ No sheets found.", 400, 100);
+        warnCtx.fillText("No sheets found.", 400, 100);
         return;
     }
 
+    // Vertical layout: one sheet per row
+    var sheetWidthPx = 850;
+    var sheetHeightPx = 500;
     var canvas = document.createElement('canvas');
     canvas.id = 'cuttingCanvas';
-    canvas.width = 900;
-    var canvasHeight = (allSheets.length * 350) + 50; 
-    canvas.height = canvasHeight;
+    canvas.width = sheetWidthPx + 80;
+    canvas.height = allSheets.length * (sheetHeightPx + 90) + 60;
     canvas.style.width = '100%';
     canvas.style.height = 'auto';
     canvas.style.borderRadius = '6px';
     canvas.style.border = '1px solid #d0d0d0';
     canvas.style.marginTop = '16px';
-    canvas.style.background = '#ffffff'; 
-    
+    canvas.style.background = '#ffffff';
+
     container.appendChild(canvas);
     var ctx = canvas.getContext('2d');
     var sheetWidth = data.sheet_width || 2440;
     var sheetHeight = data.sheet_height || 1220;
-    
-    var scaleX = (canvas.width - 100) / sheetWidth;
-    var scaleY = 170 / sheetHeight;
-    var scale = Math.min(scaleX, scaleY, 0.35);
-    var yOffset = 60;
-    
-    var partColors = ['#FFB6C1', '#AFEEEE', '#E6E6FA', '#98FB98', '#FFDAB9', '#ADD8E6', '#FFE4E1', '#B0E0E6', '#F5DEB3', '#D8BFD8', '#FF9999', '#99FF99', '#9999FF', '#FFFF99', '#FF99FF', '#99FFFF'];
+
+    // Very light pastel colors
+    var partColors = [
+        '#FDEFF2', '#F0F8FF', '#F5F0FA', '#F0FBF0', '#FFF5EC',
+        '#EEF6FB', '#FDF3F2', '#EAF5F8', '#FBF7EC', '#F5EEF7',
+        '#FFEEEE', '#EEFFEE', '#EEEEFF', '#FFFFEE', '#FFEEFF', '#EEFFFF'
+    ];
 
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    var yOffset = 60;
+
     allSheets.forEach(function(sheet, idx) {
         var sWidth = parseFloat(sheet.sheet_width) || 2440;
         var sHeight = parseFloat(sheet.sheet_height) || 1220;
-        var x = 50; var y = yOffset;
-        var w = sWidth * scale; var h = sHeight * scale;
-        
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, w, h);
-        ctx.strokeStyle = '#000000'; ctx.lineWidth = 2.5; ctx.strokeRect(x, y, w, h);
-        ctx.fillStyle = '#000000'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-        ctx.fillText('Sheet ' + (sheet.sheet_number || (idx + 1)), x, y - 10);
-        ctx.fillStyle = '#333333'; ctx.font = '12px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-        ctx.fillText(Math.round(sWidth) + ' × ' + Math.round(sHeight) + ' mm', x + w/2, y - 10);
+        var drawW = sheetWidthPx;
+        var drawH = sheetHeightPx;
+        var x = 40;
+        var y = yOffset;
+
+        // Sheet background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, y, drawW, drawH);
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x, y, drawW, drawH);
+
+        // Sheet label in CM
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(
+            'Sheet ' + (sheet.sheet_number || (idx + 1)) + '  —  ' +
+            (sWidth / 10).toFixed(0) + ' × ' + (sHeight / 10).toFixed(0) + ' cm',
+            x, y - 15
+        );
+
+        var scaleX = drawW / sWidth;
+        var scaleY = drawH / sHeight;
 
         var sheetParts = sheet.parts || [];
-        var sortedParts = sheetParts.sort(function(a, b) { return (a.y || 0) - (b.y || 0) || (a.x || 0) - (b.x || 0); });
+        sheetParts.forEach(function(part, pIdx) {
+            var partX = parseFloat(part.x) || 0;
+            var partY = parseFloat(part.y) || 0;
+            var partW = parseFloat(part.w) || 0;
+            var partH = parseFloat(part.h) || 0;
 
-        sortedParts.forEach(function(part, pIdx) {
-            var partX = parseFloat(part.x) || 0; var partY = parseFloat(part.y) || 0;
-            var partW = parseFloat(part.w) || 0; var partH = parseFloat(part.h) || 0;
-            var px = x + partX * scale; var py = y + partY * scale;
-            var pw = partW * scale; var ph = partH * scale;
-            if (pw < 2 || ph < 2) return;
+            var px = x + partX * scaleX;
+            var py = y + partY * scaleY;
+            var pw = partW * scaleX;
+            var ph = partH * scaleY;
 
-            // --- SMART LABEL ---
-            var smartLabel = part.label || 'PART';
-            var ratio = Math.max(partW, partH) / Math.min(partW, partH);
-            if (partW > 500 && partH > 500 && ratio > 1.2) smartLabel = 'DOOR';
-            else if (ratio > 2.0 && partW > 200) smartLabel = 'SIDE PANEL';
-            else if (partW < 700 && partH < 700) smartLabel = 'DRAWER';
-            else smartLabel = 'SHELF';
+            if (pw < 3 || ph < 3) return;
 
-            // =========================================================
-            // 🔥 FIX: ALL DOOR AND DRAWER PARTS GET VENEER HIGHLIGHT 🔥
-            // =========================================================
-            var isHighlighted = false;
-            
-            // Check if this part is a DOOR or DRAWER (they always get veneer)
-            var label = (part.label || smartLabel || '').toUpperCase();
-            if (label.indexOf('DOOR') !== -1 || label.indexOf('DRAWER') !== -1) {
-                isHighlighted = true;
-            }
-            
-            // ALSO check if the material is actually a veneer
-            if (!isHighlighted && typeof veneerHighlights !== 'undefined' && veneerHighlights.length > 0) {
-                for (var i = 0; i < veneerHighlights.length; i++) {
-                    if (veneerHighlights[i].material === part.material) {
-                        isHighlighted = true;
-                        break;
-                    }
-                }
-            }
-
-            // 1. Draw the colored background
+            // Part background
             ctx.fillStyle = partColors[pIdx % partColors.length];
             ctx.fillRect(px, py, pw, ph);
 
-            // 2. Draw the outer solid border
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 1.0;
+            // Part border
+            ctx.strokeStyle = '#666666';
+            ctx.lineWidth = 1.5;
             ctx.setLineDash([]);
             ctx.strokeRect(px, py, pw, ph);
-            
-            // 3. DRAW THE DASHED MARKER (Only for Veneered parts)
-            if (isHighlighted) {
+
+            // Veneer dashed marker
+            var hasVeneer = part.has_veneer || (part.veneer_edge_count && part.veneer_edge_count > 0);
+            if (hasVeneer) {
                 ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 1.5;
-                ctx.setLineDash([4, 4]);
-                ctx.strokeRect(px + 3, py + 3, pw - 6, ph - 6);
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 4]);
+                ctx.strokeRect(px + 4, py + 4, pw - 8, ph - 8);
                 ctx.setLineDash([]);
             }
 
-            // 4. Draw the text
-            if (pw > 40 && ph > 20) {
-                var displayText = smartLabel + ' ' + Math.round(partW) + '×' + Math.round(partH);
-                ctx.fillStyle = '#000000';
-                ctx.font = 'bold 10px Arial';
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                if (ctx.measureText(displayText).width > pw - 10) { ctx.font = 'bold 8px Arial'; }
-                ctx.fillText(displayText, px + pw/2, py + ph/2);
+            // ============================================
+            // SMART TEXT — rotates if narrow, wraps if long
+            // ============================================
+            if (pw > 12 && ph > 12) {
+                var label = (part.label || 'PART').toUpperCase();
+                var dimText = (partW / 10).toFixed(1) + '×' + (partH / 10).toFixed(1);
+
+                var rotate = (ph > pw * 1.6);
+
+                ctx.save();
+                ctx.translate(px + pw / 2, py + ph / 2);
+                if (rotate) {
+                    ctx.rotate(-Math.PI / 2);
+                }
+
+                var availW = rotate ? ph : pw;
+                var availH = rotate ? pw : ph;
+
+                var padding = 6;
+                var fontSize = 20;
+                var drawn = false;
+
+                while (fontSize > 6) {
+                    ctx.font = 'bold ' + fontSize + 'px Arial';
+
+                    var oneLine = label + ' ' + dimText;
+                    var oneW = ctx.measureText(oneLine).width;
+
+                    if (oneW <= availW - padding && fontSize * 1.4 <= availH - padding) {
+                        ctx.fillStyle = '#1a1a1a';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(oneLine, 0, 0);
+                        drawn = true;
+                        break;
+                    }
+
+                    var labelW = ctx.measureText(label).width;
+                    var dimW = ctx.measureText(dimText).width;
+                    var maxW = Math.max(labelW, dimW);
+                    var twoH = fontSize * 2.4;
+
+                    if (maxW <= availW - padding && twoH <= availH - padding) {
+                        ctx.fillStyle = '#1a1a1a';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(label, 0, -fontSize * 0.6);
+                        ctx.fillText(dimText, 0, fontSize * 0.6);
+                        drawn = true;
+                        break;
+                    }
+
+                    fontSize -= 1;
+                }
+
+                if (!drawn) {
+                    ctx.font = 'bold 6px Arial';
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(dimText, 0, 0);
+                }
+
+                ctx.restore();
             }
         });
-        yOffset += h + 90;
+
+        yOffset += drawH + 90;
     });
 }
+        
         // ============================================
         // VENEER CALCULATOR
         // ============================================
@@ -4348,7 +4713,327 @@ function calculateVeneerWithMaterials() {
         }
 
         function printResults() {
-            window.print();
+            if (!window.lastOptimizationData) {
+                alert('Please run Calculate Cut List first before printing.');
+                return;
+            }
+
+            var data = window.lastOptimizationData;
+            var details = data.details || {};
+            var summary = data.summary || {};
+
+            // Collect sheets
+            var allSheets = [];
+            Object.keys(details).forEach(function(materialKey) {
+                var md = details[materialKey];
+                if (md && Array.isArray(md.sheets)) {
+                    md.sheets.forEach(function(sheet) {
+                        if (sheet && !sheet.is_scrap_note) {
+                            allSheets.push({ material: materialKey, sheet: sheet });
+                        }
+                    });
+                }
+            });
+
+            if (allSheets.length === 0) {
+                alert('No sheets to print.');
+                return;
+            }
+
+            // Rebuild print container
+            var printDiv = document.getElementById('printContainer');
+            if (!printDiv) {
+                printDiv = document.createElement('div');
+                printDiv.id = 'printContainer';
+                document.body.appendChild(printDiv);
+            }
+            printDiv.innerHTML = '';
+
+            // Global aggregate of all panels across all sheets
+            var allPanelCounts = {};
+            allSheets.forEach(function(item) {
+                (item.sheet.parts || []).forEach(function(p) {
+                    var key = Math.round(p.w / 10) + '×' + Math.round(p.h / 10) + '|' + (p.label || 'PART');
+                    if (!allPanelCounts[key]) {
+                        allPanelCounts[key] = {
+                            size: Math.round(p.w / 10) + '×' + Math.round(p.h / 10),
+                            label: p.label || 'PART',
+                            qty: 0
+                        };
+                    }
+                    allPanelCounts[key].qty += 1;
+                });
+            });
+
+            // Build each sheet page
+            allSheets.forEach(function(item, idx) {
+                var sheet = item.sheet;
+                var sWidth = sheet.sheet_width || 2440;
+                var sHeight = sheet.sheet_height || 1220;
+                var partsOnSheet = sheet.parts || [];
+                var usedArea = sheet.used_area || 0;
+                var wasteArea = sheet.waste_area || 0;
+                var totalArea = sWidth * sHeight;
+                var efficiency = totalArea > 0 ? ((usedArea / totalArea) * 100) : 0;
+                if (efficiency > 100) efficiency = 100;
+
+                // Per-sheet panel groups
+                var perSheetPanels = {};
+                partsOnSheet.forEach(function(p) {
+                    var key = Math.round(p.w / 10) + '×' + Math.round(p.h / 10) + '|' + (p.label || 'PART');
+                    if (!perSheetPanels[key]) {
+                        perSheetPanels[key] = {
+                            size: Math.round(p.w / 10) + '×' + Math.round(p.h / 10),
+                            label: p.label || 'PART',
+                            qty: 0
+                        };
+                    }
+                    perSheetPanels[key].qty += 1;
+                });
+
+                var html = '<div class="print-sheet">';
+
+                // ========== TOP SECTION ==========
+                html += '<div class="print-top">';
+
+                // Left: title
+                html += '<div class="print-top-left">';
+                html += '<h1>CutList Optimizer</h1>';
+                html += '</div>';
+
+                // Right: global stats + panels + stock sheet
+                html += '<div class="print-top-right">';
+
+                // Global stats block
+                html += '<div class="print-global-stats">';
+                html += '<div class="gs-col">';
+                html += '<div class="gs-row"><span>Used stock sheets</span><span>' + allSheets.length + '</span></div>';
+                html += '<div class="gs-row"><span>Total used area</span><span>' + (summary.total_area || 0).toFixed(4) + ' m²</span></div>';
+                html += '<div class="gs-row"><span>Total wasted area</span><span>' + (summary.total_waste || 0).toFixed(4) + ' m²</span></div>';
+                html += '<div class="gs-row"><span>Total cuts</span><span>' + partsOnSheet.length + '</span></div>';
+                html += '<div class="gs-row"><span>Total cut length</span><span>' + (sheet.cut_length ? sheet.cut_length.toFixed(0) : '0') + '</span></div>';
+                html += '<div class="gs-row"><span>Cut / blade / kerf thickness</span><span>' + (data.kerf || 3) + '</span></div>';
+                html += '<div class="gs-row"><span>Edge band 1</span><span>' + (sheet.edge_band_1 || '0') + '</span></div>';
+                html += '</div>';
+
+                // Panels summary block (all sheets)
+                html += '<div class="gs-col panels-col">';
+                html += '<div class="gs-header">Panels</div>';
+                html += '<div class="gs-panels-list">';
+                Object.keys(allPanelCounts).forEach(function(k) {
+                    var g = allPanelCounts[k];
+                    html += '<span class="panel-chip">' + g.size + ' ' + g.label + ' ×' + g.qty + '</span>';
+                });
+                html += '</div>';
+                html += '<div class="gs-row" style="margin-top:6px;"><span><strong>Stock sheets</strong></span><span>' + (sWidth / 10).toFixed(0) + '×' + (sHeight / 10).toFixed(0) + ' ×1</span></div>';
+                html += '</div>';
+
+                html += '</div>'; // end print-global-stats
+                html += '</div>'; // end print-top-right
+                html += '</div>'; // end print-top
+
+                // ========== BOTTOM SECTION ==========
+                html += '<div class="print-bottom">';
+
+                // LEFT column: sheet stats + per-sheet panel table + numbered list
+                html += '<div class="print-left-col">';
+
+                // Stock sheet header
+                html += '<div class="plc-block">';
+                html += '<div class="plc-title">Stock sheet &nbsp;<strong>' + (sWidth / 10).toFixed(0) + '×' + (sHeight / 10).toFixed(0) + '</strong></div>';
+                html += '<div class="plc-row"><span>Used area</span><span>' + (usedArea / 1000000).toFixed(4) + ' m²</span></div>';
+                html += '<div class="plc-row"><span>Wasted area</span><span>' + (wasteArea / 1000000).toFixed(4) + ' m²</span></div>';
+                html += '<div class="plc-row"><span>Cut length</span><span>' + (sheet.cut_length ? sheet.cut_length.toFixed(0) : '0') + '</span></div>';
+                html += '<div class="plc-row"><span>Panels</span><span>' + partsOnSheet.length + '</span></div>';
+                html += '<div class="plc-row"><span>Wasted panels</span><span>0</span></div>';
+                html += '<div class="plc-row"><span>Edge band 1</span><span>' + (sheet.edge_band_1 || '0') + '</span></div>';
+                html += '</div>';
+
+                // Panel table
+                html += '<div class="plc-block">';
+                html += '<div class="plc-title">Panel &nbsp; Label &nbsp; Qty</div>';
+                html += '<table class="plc-table">';
+                Object.keys(perSheetPanels).forEach(function(k) {
+                    var g = perSheetPanels[k];
+                    html += '<tr><td>' + g.size + '</td><td>' + g.label + '</td><td style="text-align:right;">' + g.qty + '</td></tr>';
+                });
+                html += '</table>';
+                html += '</div>';
+
+                // Numbered list of each part
+                html += '<div class="plc-block">';
+                html += '<div class="plc-title"># &nbsp; Panel &nbsp; Cut</div>';
+                html += '<table class="plc-table">';
+                partsOnSheet.forEach(function(p, i) {
+                    var w = Math.round(p.w / 10);
+                    var h = Math.round(p.h / 10);
+                    html += '<tr>';
+                    html += '<td>' + (i + 1) + '.</td>';
+                    html += '<td>' + w + '×' + h + '</td>';
+                    html += '<td>' + (p.label ? p.label.substring(0, 8) : '—') + '</td>';
+                    html += '</tr>';
+                });
+                html += '</table>';
+                html += '</div>';
+
+                html += '</div>'; // end print-left-col
+
+                // RIGHT column: diagram
+                html += '<div class="print-right-col">';
+                html += '<canvas id="printCanvas_' + idx + '"></canvas>';
+                html += '</div>';
+
+                html += '</div>'; // end print-bottom
+
+                html += '</div>'; // end print-sheet
+
+                printDiv.innerHTML += html;
+            });
+
+            // Draw each sheet
+            allSheets.forEach(function(item, idx) {
+                drawSheetForPrint(item.sheet, 'printCanvas_' + idx);
+            });
+
+            // Print
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        }
+
+        function drawSheetForPrint(sheet, canvasId) {
+            var canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            var sWidth = sheet.sheet_width || 2440;
+            var sHeight = sheet.sheet_height || 1220;
+
+            // Print column is ~170mm wide × ~220mm tall
+            // Landscape sheet fills width; height follows the aspect ratio
+
+            // Fixed logical size; the canvas keeps its true aspect
+            // For 244×122 cm sheets: aspect = 2.0, so 960 × 480
+            var logicalWidth = 960;
+            var aspect = sWidth / sHeight;
+            var logicalHeight = Math.round(logicalWidth / aspect);
+
+            canvas.width = logicalWidth;
+            canvas.height = logicalHeight;
+
+            // Let CSS handle the display size — but keep the aspect!
+            // We use inline style so the print CSS doesn't override it.
+            canvas.style.width = logicalWidth + 'px';
+            canvas.style.height = logicalHeight + 'px';
+            canvas.style.maxWidth = '100%';
+            canvas.style.height = 'auto';
+
+            var ctx = canvas.getContext('2d');
+            var padding = 4;
+            var drawW = canvas.width - padding * 2;
+            var drawH = canvas.height - padding * 2;
+            var x = padding;
+            var y = padding;
+
+            var scaleX = drawW / sWidth;
+            var scaleY = drawH / sHeight;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, drawW, drawH);
+
+            var partColors = [
+                '#FDEFF2', '#F0F8FF', '#F5F0FA', '#F0FBF0', '#FFF5EC',
+                '#EEF6FB', '#FDF3F2', '#EAF5F8', '#FBF7EC', '#F5EEF7',
+                '#FFEEEE', '#EEFFEE', '#EEEEFF', '#FFFFEE', '#FFEEFF', '#EEFFFF'
+            ];
+
+            var sheetParts = sheet.parts || [];
+            sheetParts.forEach(function(part, pIdx) {
+                var px = x + (parseFloat(part.x) || 0) * scaleX;
+                var py = y + (parseFloat(part.y) || 0) * scaleY;
+                var pw = (parseFloat(part.w) || 0) * scaleX;
+                var ph = (parseFloat(part.h) || 0) * scaleY;
+                if (pw < 2 || ph < 2) return;
+
+                // Background
+                ctx.fillStyle = partColors[pIdx % partColors.length];
+                ctx.fillRect(px, py, pw, ph);
+
+                // Border
+                ctx.strokeStyle = '#444';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([]);
+                ctx.strokeRect(px, py, pw, ph);
+
+                // Veneer dashed
+                var hasVeneer = part.has_veneer || (part.veneer_edge_count && part.veneer_edge_count > 0);
+                if (hasVeneer) {
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([3, 3]);
+                    ctx.strokeRect(px + 3, py + 3, pw - 6, ph - 6);
+                    ctx.setLineDash([]);
+                }
+
+                // ============================================
+                // TEXT: "LABEL W×H" — auto-rotate if tall, shrink if small
+                // ============================================
+                if (pw > 15 && ph > 12) {
+                    var label = (part.label || 'PANEL').toUpperCase();
+                    var dimText = (part.w / 10).toFixed(1) + '×' + (part.h / 10).toFixed(1);
+                    var fullText = label + ' ' + dimText;
+
+                    // Rotate if the part is significantly taller than wide
+                    var rotateText = (ph > pw * 1.6);
+
+                    ctx.save();
+                    ctx.translate(px + pw / 2, py + ph / 2);
+                    if (rotateText) ctx.rotate(-Math.PI / 2);
+
+                    var availW = (rotateText ? ph : pw) - 8;
+                    var availH = (rotateText ? pw : ph) - 8;
+
+                    // Start with a large font, shrink until it fits
+                    var fontSize = 18;
+                    while (fontSize > 6) {
+                        ctx.font = 'bold ' + fontSize + 'px Arial';
+                        if (ctx.measureText(fullText).width <= availW &&
+                            fontSize * 1.3 <= availH) {
+                            break;
+                        }
+                        fontSize -= 1;
+                    }
+
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(fullText, 0, 0);
+                    ctx.restore();
+                } else if (pw > 8 && ph > 6) {
+                    // Tiny parts: just dims, no label
+                    ctx.save();
+                    ctx.translate(px + pw / 2, py + ph / 2);
+                    var tRotate = (ph > pw * 1.6);
+                    if (tRotate) ctx.rotate(-Math.PI / 2);
+                    var dimOnly = Math.round(part.w / 10) + '×' + Math.round(part.h / 10);
+                    var fs = 10;
+                    while (fs > 4) {
+                        ctx.font = 'bold ' + fs + 'px Arial';
+                        var aW = (tRotate ? ph : pw) - 4;
+                        var aH = (tRotate ? pw : ph) - 4;
+                        if (ctx.measureText(dimOnly).width <= aW && fs * 1.3 <= aH) break;
+                        fs -= 1;
+                    }
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(dimOnly, 0, 0);
+                    ctx.restore();
+                }
+            });
         }
 
         
@@ -4394,50 +5079,55 @@ function checkServerStatus() {
         });
 }
 
+
         // ============================================
         // INIT
         // ============================================
 
-        function initializeApp() {
-            lockApp();
-            var token = localStorage.getItem('cutpro_token');
-            var user = localStorage.getItem('cutpro_user');
-            if (token && user) {
-                fetch(API_URL + '/auth/verify', {
-                    method: 'GET',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    if (data.success) {
-                        authToken = token;
-                        currentUser = user;
-                        unlockApp();
-                        checkAuth();
-                        loadSample();
-                        autoLoadSketchUpParts();
-                        checkServerStatus();
-                        updateAllUnits();
-                        console.log('✅ Logged in as:', currentUser);
-                    } else {
-                        localStorage.removeItem('cutpro_token');
-                        localStorage.removeItem('cutpro_user');
-                        authToken = null;
-                        currentUser = null;
-                        showLoginModal();
-                    }
-                })
-                .catch(function(err) {
-                    localStorage.removeItem('cutpro_token');
-                    localStorage.removeItem('cutpro_user');
-                    authToken = null;
-                    currentUser = null;
-                    showLoginModal();
-                });
+function initializeApp() {
+    loadPartsFromStorage();
+    var token = localStorage.getItem('cutpro_token');
+    var user = localStorage.getItem('cutpro_user');
+
+    if (token && user) {
+        fetch(API_URL + '/auth/verify', {
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                authToken = token;
+                currentUser = user;
+                unlockApp();
+                checkAuth();
+                autoLoadSketchUpParts();
+                checkServerStatus();
+                updateAllUnits();
             } else {
+                localStorage.removeItem('cutpro_token');
+                localStorage.removeItem('cutpro_user');
+                authToken = null;
+                currentUser = null;
+                // DON'T lock — allow view, show login prompt on actions
+                autoLoadSketchUpParts();
                 showLoginModal();
             }
-        }
+        })
+        .catch(function() {
+            localStorage.removeItem('cutpro_token');
+            localStorage.removeItem('cutpro_user');
+            authToken = null;
+            currentUser = null;
+            autoLoadSketchUpParts();
+            showLoginModal();
+        });
+    } else {
+        // Not logged in — still load parts, ask for login
+        autoLoadSketchUpParts();
+        showLoginModal();
+    }
+}
 
 
                 // ============================================
@@ -4552,11 +5242,147 @@ setInterval(function() {
 function downloadCutPro() {
     var link = document.createElement('a');
     link.href = API_URL + '/download-cutpro';
-    link.download = 'CutPro_v3.0.zip';
+    link.download = 'CutPro_v3.8.zip';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 }
+
+
+
+        var currentEdgeBandPartId = null;
+
+        function openEdgeBandModal(partId) {
+            currentEdgeBandPartId = partId;
+            var part = parts.find(function(p) { return p.id === partId; });
+            if (!part) return;
+
+            var topLen = getDisplayValue(part.width, currentUnit);
+            var bottomLen = getDisplayValue(part.width, currentUnit);
+            var leftLen = getDisplayValue(part.length, currentUnit);
+            var rightLen = getDisplayValue(part.length, currentUnit);
+
+            document.getElementById('edgeBandTopLen').textContent = topLen;
+            document.getElementById('edgeBandBottomLen').textContent = bottomLen;
+            document.getElementById('edgeBandLeftLen').textContent = leftLen;
+            document.getElementById('edgeBandRightLen').textContent = rightLen;
+
+            var eb = part.edge_bands || {};
+            document.getElementById('edgeBandTop').value = eb.top || 'none';
+            document.getElementById('edgeBandBottom').value = eb.bottom || 'none';
+            document.getElementById('edgeBandLeft').value = eb.left || 'none';
+            document.getElementById('edgeBandRight').value = eb.right || 'none';
+
+            updateEdgeBandSummary();
+            document.getElementById('edgeBandModal').style.display = 'block';
+        }
+
+        function closeEdgeBandModal() {
+            document.getElementById('edgeBandModal').style.display = 'none';
+            currentEdgeBandPartId = null;
+        }
+
+        function updateEdgeBandSummary() {
+            var count = 0;
+            ['Top','Bottom','Left','Right'].forEach(function(side) {
+                var v = document.getElementById('edgeBand' + side).value;
+                if (v !== 'none') count++;
+            });
+            document.getElementById('edgeBandSummary').textContent = count + '× band';
+        }
+
+        function saveEdgeBand() {
+            if (currentEdgeBandPartId === null) return;
+            var part = parts.find(function(p) { return p.id === currentEdgeBandPartId; });
+            if (!part) return;
+
+            var eb = {
+                top: document.getElementById('edgeBandTop').value,
+                bottom: document.getElementById('edgeBandBottom').value,
+                left: document.getElementById('edgeBandLeft').value,
+                right: document.getElementById('edgeBandRight').value
+            };
+            part.edge_bands = eb;
+
+            var hasVeneer = (eb.top !== 'none' || eb.bottom !== 'none' || eb.left !== 'none' || eb.right !== 'none');
+            part.has_veneer = hasVeneer;
+
+            var totalMm = 0;
+            if (eb.top !== 'none') totalMm += part.width;
+            if (eb.bottom !== 'none') totalMm += part.width;
+            if (eb.left !== 'none') totalMm += part.length;
+            if (eb.right !== 'none') totalMm += part.length;
+            part.veneer_length_mm = totalMm;
+            part.veneer_edge_count = (eb.top !== 'none' ? 1 : 0) + (eb.bottom !== 'none' ? 1 : 0) + (eb.left !== 'none' ? 1 : 0) + (eb.right !== 'none' ? 1 : 0);
+
+            renderParts();
+            closeEdgeBandModal();
+            savePartsToStorage();
+        }
+
+        function mergeDuplicates() {
+            if (parts.length === 0) {
+                showResult('parseResult', '⚠️ No parts to merge', 'error');
+                return;
+            }
+
+            var before = parts.length;
+
+            // Group by rounded dimensions + material + label
+            var merged = {};
+            parts.forEach(function(p) {
+                var key = Math.round(p.length) + '_' +
+                          Math.round(p.width) + '_' +
+                          (p.material || 'MDF') + '_' +
+                          (p.label || 'Part');
+
+                if (merged[key]) {
+                    // Sum quantities
+                    merged[key].qty += p.qty;
+
+                    // Merge edge band info (keep if any side has banding)
+                    if (p.edge_bands) {
+                        var eb = merged[key].edge_bands || {};
+                        ['top', 'left', 'bottom', 'right'].forEach(function(side) {
+                            if (p.edge_bands[side] && p.edge_bands[side] !== 'none') {
+                                eb[side] = p.edge_bands[side];
+                            }
+                        });
+                        merged[key].edge_bands = eb;
+
+                        // Recompute has_veneer
+                        merged[key].has_veneer =
+                            (eb.top && eb.top !== 'none') ||
+                            (eb.bottom && eb.bottom !== 'none') ||
+                            (eb.left && eb.left !== 'none') ||
+                            (eb.right && eb.right !== 'none');
+                    }
+                } else {
+                    // First occurrence — deep copy so we don't modify the original
+                    merged[key] = JSON.parse(JSON.stringify(p));
+                }
+            });
+
+            // Rebuild parts array with fresh IDs
+            parts = Object.values(merged).map(function(p) {
+                p.id = ++partIdCounter;
+                return p;
+            });
+
+            var after = parts.length;
+            var removed = before - after;
+
+            renderParts();
+            updateSummary();
+
+            if (removed > 0) {
+                showResult('parseResult',
+                    '🔗 Merged ' + removed + ' duplicate row(s). Now ' + after + ' unique part(s).',
+                    'success');
+            } else {
+                showResult('parseResult', '✅ No duplicates found', 'success');
+            }
+        }
 
         // Smooth scroll to FAQ when clicking "How to install"
         // (uses the native anchor #faqSection, no JS needed)

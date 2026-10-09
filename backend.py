@@ -312,7 +312,7 @@ def api_status():
 def download_cutpro():
     """Redirects to the CutPro package hosted on GitHub Releases."""
     from flask import redirect
-    GITHUB_RELEASE_URL = 'https://github.com/Biruke123/cutpro-optimizer/releases/download/v3.0/CutPro_v3.0.zip'
+    GITHUB_RELEASE_URL = 'https://github.com/Biruke123/cutpro-optimizer/releases/download/v3.8/CutPro_v3.8.zip'
     print(f"📥 Download requested → redirecting to GitHub Releases")
     return redirect(GITHUB_RELEASE_URL, code=302)
 
@@ -1430,7 +1430,7 @@ def get_latest_sketchup_parts():
     
     return jsonify({
         'success': True,
-        'parts': latest_sketchup_parts,  # Return ALL fields
+        'parts': latest_sketchup_parts,
         'total_parts': len(latest_sketchup_parts),
         'has_parts': len(latest_sketchup_parts) > 0
     })
