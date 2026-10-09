@@ -602,14 +602,8 @@ def calculate_veneer():
             print(f"  {label}: has_veneer={has_veneer}, length={veneer_length_mm}mm")
             
             # If has_veneer is true but length is 0, calculate from part dimensions
-            if has_veneer and veneer_length_mm <= 0:
-                # Fallback: Use the part's own dimensions
-                w = float(part.get('length', 0))
-                h = float(part.get('width', 0))
-                if w > 0 and h > 0:
-                    # Assume 4 sides if has_veneer
-                    veneer_length_mm = 2 * (w + h)
-                    print(f"      Length was 0, calculated fallback: {veneer_length_mm}mm")
+            # Only count parts that explicitly have veneer length
+            # No fallback — trust the frontend's veneer_length_mm
             
             if not has_veneer or veneer_length_mm <= 0:
                 non_veneer_parts_count += int(qty)

@@ -3845,12 +3845,13 @@ function addPart(length, width, qty, material, label) {
                     length: p.length,
                     width: p.width,
                     qty: p.qty,
-                    material: p.material || '18mm Birch Plywood',
+                    material: p.material || 'MDF',
                     label: p.label || 'Part',
-                            // 🎯 SEND VENEER FIELDS
-                    veneer_edges: p.veneer_edges || 0,
+                    veneer_sides: p.veneer_sides || 0,
+                    veneer_edge_count: p.veneer_edge_count || 0,
                     veneer_length_mm: p.veneer_length_mm || 0,
-                    has_veneer: p.has_veneer || false                            
+                    has_veneer: p.has_veneer || false
+                   
                 };
             });
             fetch(API_URL + '/optimize', {
