@@ -4782,7 +4782,7 @@ function calculateVeneerWithMaterials() {
             URL.revokeObjectURL(url);
         }
 
-        function printResults() {
+                function printResults() {
             if (!window.lastOptimizationData) {
                 alert('Please run Calculate Cut List first before printing.');
                 return;
@@ -4790,7 +4790,6 @@ function calculateVeneerWithMaterials() {
 
             var data = window.lastOptimizationData;
             var details = data.details || {};
-            var summary = data.summary || {};
 
             // Collect sheets
             var allSheets = [];
@@ -4819,22 +4818,6 @@ function calculateVeneerWithMaterials() {
             }
             printDiv.innerHTML = '';
 
-            // Global aggregate of all panels across all sheets
-            var allPanelCounts = {};
-            allSheets.forEach(function(item) {
-                (item.sheet.parts || []).forEach(function(p) {
-                    var key = Math.round(p.w / 10) + '×' + Math.round(p.h / 10) + '|' + (p.label || 'PART');
-                    if (!allPanelCounts[key]) {
-                        allPanelCounts[key] = {
-                            size: Math.round(p.w / 10) + '×' + Math.round(p.h / 10),
-                            label: p.label || 'PART',
-                            qty: 0
-                        };
-                    }
-                    allPanelCounts[key].qty += 1;
-                });
-            });
-
             // Build each sheet page
             allSheets.forEach(function(item, idx) {
                 var sheet = item.sheet;
@@ -4843,9 +4826,6 @@ function calculateVeneerWithMaterials() {
                 var partsOnSheet = sheet.parts || [];
                 var usedArea = sheet.used_area || 0;
                 var wasteArea = sheet.waste_area || 0;
-                var totalArea = sWidth * sHeight;
-                var efficiency = totalArea > 0 ? ((usedArea / totalArea) * 100) : 0;
-                if (efficiency > 100) efficiency = 100;
 
                 // Per-sheet panel groups
                 var perSheetPanels = {};
@@ -4863,38 +4843,19 @@ function calculateVeneerWithMaterials() {
 
                 var html = '<div class="print-sheet">';
 
-                // ========== TOP SECTION ==========
-                
-
-                // Panels summary block (all sheets)
-                                // Panels summary block (all sheets) — grid layout
-                var panelKeys = Object.keys(allPanelCounts);
-                var ROWS_PER_COL = 10;
-
-                html += '<div class="gs-col panels-col">';
-                html += '<div class="gs-header">Panels (' + panelKeys.length + ' types)</div>';
-                
-                html += '</div>';
-
-                html += '</div>'; // end print-global-stats
-                html += '</div>'; // end print-top-right
-                html += '</div>'; // end print-top
-
-                // ========== BOTTOM SECTION ==========
-                                // Small header
+                // Small header
                 html += '<div class="print-sheet-header">';
                 html += 'SHEET ' + (idx + 1) + ' / ' + allSheets.length;
                 html += ' &nbsp;·&nbsp; ' + (sWidth / 10).toFixed(0) + ' × ' + (sHeight / 10).toFixed(0) + ' cm';
                 html += ' &nbsp;·&nbsp; ' + item.material;
                 html += '</div>';
 
-                // ========== BOTTOM SECTION ==========
+                // BOTTOM SECTION
                 html += '<div class="print-bottom">';
 
-                // LEFT column: sheet stats + per-sheet panel table + numbered list
+                // LEFT column
                 html += '<div class="print-left-col">';
 
-                // Stock sheet header
                 html += '<div class="plc-block">';
                 html += '<div class="plc-title">Stock sheet &nbsp;<strong>' + (sWidth / 10).toFixed(0) + '×' + (sHeight / 10).toFixed(0) + '</strong></div>';
                 html += '<div class="plc-row"><span>Used area</span><span>' + (usedArea / 1000000).toFixed(4) + ' m²</span></div>';
@@ -4905,7 +4866,6 @@ function calculateVeneerWithMaterials() {
                 html += '<div class="plc-row"><span>Edge band 1</span><span>' + (sheet.edge_band_1 || '0') + '</span></div>';
                 html += '</div>';
 
-                // Panel table
                 html += '<div class="plc-block">';
                 html += '<div class="plc-title">Panel &nbsp; Label &nbsp; Qty</div>';
                 html += '<table class="plc-table">';
@@ -4916,7 +4876,6 @@ function calculateVeneerWithMaterials() {
                 html += '</table>';
                 html += '</div>';
 
-                // Numbered list of each part
                 html += '<div class="plc-block">';
                 html += '<div class="plc-title"># &nbsp; Panel &nbsp; Cut</div>';
                 html += '<table class="plc-table">';
@@ -4934,13 +4893,12 @@ function calculateVeneerWithMaterials() {
 
                 html += '</div>'; // end print-left-col
 
-                // RIGHT column: diagram
+                // RIGHT column — sheet diagram
                 html += '<div class="print-right-col">';
                 html += '<canvas id="printCanvas_' + idx + '"></canvas>';
                 html += '</div>';
 
                 html += '</div>'; // end print-bottom
-
                 html += '</div>'; // end print-sheet
 
                 printDiv.innerHTML += html;
