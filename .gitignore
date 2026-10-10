@@ -20,3 +20,11 @@ uploads/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Build artifacts (don't commit)
+CutPro_Staging/
+dist_installer/
+temp_v3.0/
+temp_check/
+installer_source/
+*.exe

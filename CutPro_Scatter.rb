@@ -137,9 +137,10 @@ module CutPro
 
       if !backend_ok
         result = UI.messagebox(
-          "⚠️ CutPro backend is NOT running!\n\n" +
-          "Start it first:\n" +
-          "  CutPro_Launcher.bat\n\n" +
+          "⚠️ Cannot reach CutPro cloud!\n\n" +
+          "Check your internet connection.\n\n" +
+          "Expected server:\n" +
+          "#{BACKEND_URL}\n\n" +
           "Continue anyway?",
           MB_YESNO
         )
@@ -403,8 +404,8 @@ module CutPro
       begin
         uri = URI.parse("#{BACKEND_URL}/api/status")
         http = Net::HTTP.new(uri.host, uri.port)
-        http.open_timeout = 3
-        http.read_timeout = 3
+        http.open_timeout = 10
+        http.read_timeout = 15
         response = http.get(uri.path)
         response.code == '200'
       rescue
@@ -416,8 +417,8 @@ module CutPro
       begin
         uri = URI.parse("#{BACKEND_URL}/api/parts-from-sketchup")
         http = Net::HTTP.new(uri.host, uri.port)
-        http.open_timeout = 5
-        http.read_timeout = 30
+        http.open_timeout = 15
+        http.read_timeout = 60
 
         request = Net::HTTP::Post.new(uri.path)
         request['Content-Type'] = 'application/json'
@@ -466,12 +467,11 @@ unless file_loaded?(__FILE__)
 
   submenu.add_item('🔍 Check CutPro Status') {
     if CutPro::Scatter.check_backend
-      UI.messagebox("✅ CutPro backend is RUNNING")
+      UI.messagebox("✅ CutPro cloud is reachable\n\n#{CutPro::Scatter::BACKEND_URL}")
     else
-      UI.messagebox("❌ CutPro backend NOT running")
+      UI.messagebox("❌ Cannot reach CutPro cloud\n\n#{CutPro::Scatter::BACKEND_URL}\n\nCheck your internet connection.")
     end
   }
-
   submenu.add_item('🌐 Open CutPro Website') {
     CutPro::Scatter.open_web_app
   }

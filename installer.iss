@@ -1,12 +1,12 @@
 ; ============================================
-; CutPro v3.0 - Inno Setup Installer Script
+; CutPro v4.0 - Inno Setup Installer Script
 ; Build: "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
 ; ============================================
 
 #define MyAppName "CutPro"
-#define MyAppVersion "3.0.0"
+#define MyAppVersion "4.0.0"
 #define MyAppPublisher "BLM"
-#define MyAppURL "https://cutpro.example.com"
+#define MyAppURL "https://cutpro-optimizer.onrender.com"
 #define MyAppExeName "CutPro.exe"
 
 [Setup]
@@ -22,15 +22,15 @@ DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=CutPro_Staging\LICENSE.txt
 OutputDir=dist_installer
-OutputBaseFilename=CutProSetup_v3.0
-SetupIconFile=CutPro_Package\CutPro.ico
+OutputBaseFilename=CutProSetup_v4.0
+SetupIconFile=CutPro_Staging\CutPro.ico
 UninstallDisplayIcon={app}\CutPro.ico
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
-ArchitecturesInstallIn64BitMode=x64
-ArchitecturesAllowed=x64
+ArchitecturesInstallIn64BitMode=x64compatible
+ArchitecturesAllowed=x64compatible
 DisableDirPage=no
 DisableReadyPage=no
 AllowNoIcons=yes
@@ -44,12 +44,12 @@ Name: "sketchupplugin"; Description: "Install the SketchUp plugin (CutPro_Scatte
 Name: "launchapp"; Description: "Launch CutPro after installation"; GroupDescription: "After install:"; Flags: checkedonce
 
 [Files]
-Source: "CutPro_Staging\CutPro.exe";           DestDir: "{app}"; Flags: ignoreversion
-Source: "CutPro_Staging\CutPro.ico";           DestDir: "{app}"; Flags: ignoreversion
-Source: "CutPro_Staging\CutPro_Scatter.rb";    DestDir: "{app}"; Flags: ignoreversion
-Source: "CutPro_Staging\install_sketchup_plugin.ps1"; DestDir: "{app}"; Flags: ignoreversion
-Source: "CutPro_Staging\README.txt";           DestDir: "{app}"; Flags: ignoreversion
-Source: "CutPro_Staging\LICENSE.txt";          DestDir: "{app}"; Flags: ignoreversion
+Source: "CutPro_Staging\CutPro.exe";                   DestDir: "{app}"; Flags: ignoreversion
+Source: "CutPro_Staging\CutPro.ico";                   DestDir: "{app}"; Flags: ignoreversion
+Source: "CutPro_Staging\CutPro_Scatter.rb";            DestDir: "{app}"; Flags: ignoreversion
+Source: "CutPro_Staging\install_sketchup_plugin.ps1";  DestDir: "{app}"; Flags: ignoreversion
+Source: "CutPro_Staging\README.txt";                   DestDir: "{app}"; Flags: ignoreversion
+Source: "CutPro_Staging\LICENSE.txt";                  DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}";              Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\CutPro.ico"
