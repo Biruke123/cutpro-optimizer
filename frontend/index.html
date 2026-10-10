@@ -2127,7 +2127,7 @@ body.installed-mode .nav-item[data-section="download"] {
         min-width: 20px;
         text-align: right;
     }
-    
+
     body > *:not(#printContainer) { display: none !important; }
     body { background: white !important; margin: 0 !important; padding: 0 !important; }
     #printContainer { display: block !important; width: 100% !important; background: white; }
@@ -4854,27 +4854,7 @@ function calculateVeneerWithMaterials() {
                 var html = '<div class="print-sheet">';
 
                 // ========== TOP SECTION ==========
-                html += '<div class="print-top">';
-
-                // Left: title
-                html += '<div class="print-top-left">';
-                html += '<h1>CutList Optimizer</h1>';
-                html += '</div>';
-
-                // Right: global stats + panels + stock sheet
-                html += '<div class="print-top-right">';
-
-                // Global stats block
-                html += '<div class="print-global-stats">';
-                html += '<div class="gs-col">';
-                html += '<div class="gs-row"><span>Used stock sheets</span><span>' + allSheets.length + '</span></div>';
-                html += '<div class="gs-row"><span>Total used area</span><span>' + (summary.total_area || 0).toFixed(4) + ' m²</span></div>';
-                html += '<div class="gs-row"><span>Total wasted area</span><span>' + (summary.total_waste || 0).toFixed(4) + ' m²</span></div>';
-                html += '<div class="gs-row"><span>Total cuts</span><span>' + partsOnSheet.length + '</span></div>';
-                html += '<div class="gs-row"><span>Total cut length</span><span>' + (sheet.cut_length ? sheet.cut_length.toFixed(0) : '0') + '</span></div>';
-                html += '<div class="gs-row"><span>Cut / blade / kerf thickness</span><span>' + (data.kerf || 3) + '</span></div>';
-                html += '<div class="gs-row"><span>Edge band 1</span><span>' + (sheet.edge_band_1 || '0') + '</span></div>';
-                html += '</div>';
+                
 
                 // Panels summary block (all sheets)
                                 // Panels summary block (all sheets) — grid layout
@@ -4907,6 +4887,14 @@ function calculateVeneerWithMaterials() {
                 html += '</div>'; // end print-global-stats
                 html += '</div>'; // end print-top-right
                 html += '</div>'; // end print-top
+
+                // ========== BOTTOM SECTION ==========
+                                // Small header
+                html += '<div class="print-sheet-header">';
+                html += 'SHEET ' + (idx + 1) + ' / ' + allSheets.length;
+                html += ' &nbsp;·&nbsp; ' + (sWidth / 10).toFixed(0) + ' × ' + (sHeight / 10).toFixed(0) + ' cm';
+                html += ' &nbsp;·&nbsp; ' + item.material;
+                html += '</div>';
 
                 // ========== BOTTOM SECTION ==========
                 html += '<div class="print-bottom">';
