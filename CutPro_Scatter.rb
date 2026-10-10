@@ -404,6 +404,7 @@ module CutPro
       begin
         uri = URI.parse("#{BACKEND_URL}/api/status")
         http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = (uri.scheme == 'https')
         http.open_timeout = 10
         http.read_timeout = 15
         response = http.get(uri.path)
@@ -417,6 +418,7 @@ module CutPro
       begin
         uri = URI.parse("#{BACKEND_URL}/api/parts-from-sketchup")
         http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = (uri.scheme == 'https')
         http.open_timeout = 15
         http.read_timeout = 60
 
