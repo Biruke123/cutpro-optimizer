@@ -2083,6 +2083,51 @@ body.installed-mode .nav-item[data-section="download"] {
 }
 
 @media print {
+
+        /* Panels grid — wraps into columns of 10 rows each */
+    .panels-grid {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-size: 8px;
+        margin-top: 3px;
+    }
+    .panels-column {
+        display: flex;
+        flex-direction: column;
+        min-width: 110px;
+        border-right: 1px dotted #ccc;
+        padding-right: 6px;
+    }
+    .panels-column:last-child {
+        border-right: none;
+    }
+    .panel-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 4px;
+        padding: 1px 0;
+        border-bottom: 1px dotted #e0e0e0;
+        line-height: 1.35;
+    }
+    .panel-row .panel-size {
+        font-weight: 600;
+        color: #000;
+        min-width: 40px;
+    }
+    .panel-row .panel-label {
+        color: #444;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .panel-row .panel-qty {
+        color: #666;
+        min-width: 20px;
+        text-align: right;
+    }
+    
     body > *:not(#printContainer) { display: none !important; }
     body { background: white !important; margin: 0 !important; padding: 0 !important; }
     #printContainer { display: block !important; width: 100% !important; background: white; }
@@ -4832,13 +4877,29 @@ function calculateVeneerWithMaterials() {
                 html += '</div>';
 
                 // Panels summary block (all sheets)
+                                // Panels summary block (all sheets) — grid layout
+                var panelKeys = Object.keys(allPanelCounts);
+                var ROWS_PER_COL = 10;
+
                 html += '<div class="gs-col panels-col">';
-                html += '<div class="gs-header">Panels</div>';
-                html += '<div class="gs-panels-list">';
-                Object.keys(allPanelCounts).forEach(function(k) {
-                    var g = allPanelCounts[k];
-                    html += '<span class="panel-chip">' + g.size + ' ' + g.label + ' ×' + g.qty + '</span>';
-                });
+                html += '<div class="gs-header">Panels (' + panelKeys.length + ' types)</div>';
+                html += '<div class="panels-grid">';
+
+                // Chunk into columns of ROWS_PER_COL
+                for (var i = 0; i < panelKeys.length; i += ROWS_PER_COL) {
+                    html += '<div class="panels-column">';
+                    var chunk = panelKeys.slice(i, i + ROWS_PER_COL);
+                    chunk.forEach(function(k) {
+                        var g = allPanelCounts[k];
+                        html += '<div class="panel-row">' +
+                                '<span class="panel-size">' + g.size + '</span>' +
+                                '<span class="panel-label">' + g.label + '</span>' +
+                                '<span class="panel-qty">×' + g.qty + '</span>' +
+                                '</div>';
+                    });
+                    html += '</div>';
+                }
+
                 html += '</div>';
                 html += '<div class="gs-row" style="margin-top:6px;"><span><strong>Stock sheets</strong></span><span>' + (sWidth / 10).toFixed(0) + '×' + (sHeight / 10).toFixed(0) + ' ×1</span></div>';
                 html += '</div>';
