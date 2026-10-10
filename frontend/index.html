@@ -2149,6 +2149,16 @@ body.installed-mode .nav-item[data-section="download"] {
         color: #000;
         background: #fff;
     }
+
+    .print-bottom {
+        flex: 1;
+        display: flex;
+        gap: 10px;
+        margin-top: 4px;
+        min-height: 0;
+    }
+
+    
     .print-sheet:last-child { page-break-after: auto; break-after: auto; }
 
     /* ----- TOP ROW ----- */
@@ -2219,25 +2229,25 @@ body.installed-mode .nav-item[data-section="download"] {
         flex: 0 0 110px;
         font-size: 7.5px;
     }
-.print-right-col {
-    flex: 1;
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    min-height: 0;
-    min-width: 0;
-    padding-left: 8px;
-    box-sizing: border-box;
-}
-.print-right-col canvas {
-    display: block;
-    border: 2px solid #000;
-    /* DO NOT stretch — keep natural aspect ratio */
-    width: auto !important;
-    height: auto !important;
-    max-width: none !important;
-    max-height: none !important;
-}
+    .print-right-col {
+        flex: 1;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        min-height: 0;
+        min-width: 0;
+        padding-left: 8px;
+        box-sizing: border-box;
+    }
+    .print-right-col canvas {
+        display: block;
+        border: 2px solid #000;
+        /* Keep the canvas at its natural portrait aspect */
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 240mm;
+    }
 
     .plc-block {
         margin-bottom: 8px;
@@ -4863,25 +4873,7 @@ function calculateVeneerWithMaterials() {
 
                 html += '<div class="gs-col panels-col">';
                 html += '<div class="gs-header">Panels (' + panelKeys.length + ' types)</div>';
-                html += '<div class="panels-grid">';
-
-                // Chunk into columns of ROWS_PER_COL
-                for (var i = 0; i < panelKeys.length; i += ROWS_PER_COL) {
-                    html += '<div class="panels-column">';
-                    var chunk = panelKeys.slice(i, i + ROWS_PER_COL);
-                    chunk.forEach(function(k) {
-                        var g = allPanelCounts[k];
-                        html += '<div class="panel-row">' +
-                                '<span class="panel-size">' + g.size + '</span>' +
-                                '<span class="panel-label">' + g.label + '</span>' +
-                                '<span class="panel-qty">×' + g.qty + '</span>' +
-                                '</div>';
-                    });
-                    html += '</div>';
-                }
-
-                html += '</div>';
-                html += '<div class="gs-row" style="margin-top:6px;"><span><strong>Stock sheets</strong></span><span>' + (sWidth / 10).toFixed(0) + '×' + (sHeight / 10).toFixed(0) + ' ×1</span></div>';
+                
                 html += '</div>';
 
                 html += '</div>'; // end print-global-stats
@@ -4969,27 +4961,25 @@ function calculateVeneerWithMaterials() {
             var canvas = document.getElementById(canvasId);
             if (!canvas) return;
 
-            var sWidth = sheet.sheet_width || 2440;
-            var sHeight = sheet.sheet_height || 1220;
+            var sWidth = sheet.sheet_width || 2440;   // 244 cm
+            var sHeight = sheet.sheet_height || 1220; // 122 cm
 
-            // Print column is ~170mm wide × ~220mm tall
-            // Landscape sheet fills width; height follows the aspect ratio
+            // After rotation, the drawing is: rotated width = sHeight, rotated height = sWidth
+            var rotatedW = sHeight;
+            var rotatedH = sWidth;
 
-            // Fixed logical size; the canvas keeps its true aspect
-            // For 244×122 cm sheets: aspect = 2.0, so 960 × 480
-            var logicalWidth = 960;
-            var aspect = sWidth / sHeight;
-            var logicalHeight = Math.round(logicalWidth / aspect);
+            // Print area: tall, portrait (page height ~230mm)
+            var maxW = 700;
+            var maxH = 1000;
+            var aspect = rotatedW / rotatedH;
+            var w = maxW;
+            var h = w / aspect;
+            if (h > maxH) { h = maxH; w = h * aspect; }
 
-            canvas.width = logicalWidth;
-            canvas.height = logicalHeight;
-
-            // Let CSS handle the display size — but keep the aspect!
-            // We use inline style so the print CSS doesn't override it.
-            canvas.style.width = logicalWidth + 'px';
-            canvas.style.height = logicalHeight + 'px';
-            canvas.style.maxWidth = '100%';
-            canvas.style.height = 'auto';
+            canvas.width = Math.round(w);
+            canvas.height = Math.round(h);
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
 
             var ctx = canvas.getContext('2d');
             var padding = 4;
@@ -4998,12 +4988,13 @@ function calculateVeneerWithMaterials() {
             var x = padding;
             var y = padding;
 
-            var scaleX = drawW / sWidth;
-            var scaleY = drawH / sHeight;
+            var scaleX = drawW / rotatedW;
+            var scaleY = drawH / rotatedH;
 
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // Sheet border
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 3;
             ctx.strokeRect(x, y, drawW, drawH);
@@ -5015,22 +5006,39 @@ function calculateVeneerWithMaterials() {
             ];
 
             var sheetParts = sheet.parts || [];
+
             sheetParts.forEach(function(part, pIdx) {
-                var px = x + (parseFloat(part.x) || 0) * scaleX;
-                var py = y + (parseFloat(part.y) || 0) * scaleY;
-                var pw = (parseFloat(part.w) || 0) * scaleX;
-                var ph = (parseFloat(part.h) || 0) * scaleY;
-                if (pw < 2 || ph < 2) return;
+                // Original coordinates
+                var px_orig = parseFloat(part.x) || 0;
+                var py_orig = parseFloat(part.y) || 0;
+                var pw_orig = parseFloat(part.w) || 0;
+                var ph_orig = parseFloat(part.h) || 0;
 
-                // Background
+                // Rotate 90° clockwise: (x, y) → (sheetHeight - y - h, x)
+                // After rotation, new coordinate system has:
+                //   newX = sHeight - (y + h)
+                //   newY = x
+                //   newW = h
+                //   newH = w
+                var px_new = sHeight - (py_orig + ph_orig);
+                var py_new = px_orig;
+                var pw_new = ph_orig;
+                var ph_new = pw_orig;
+
+                var drawX = x + px_new * scaleX;
+                var drawY = y + py_new * scaleY;
+                var drawPW = pw_new * scaleX;
+                var drawPH = ph_new * scaleY;
+
+                if (drawPW < 2 || drawPH < 2) return;
+
                 ctx.fillStyle = partColors[pIdx % partColors.length];
-                ctx.fillRect(px, py, pw, ph);
+                ctx.fillRect(drawX, drawY, drawPW, drawPH);
 
-                // Border
                 ctx.strokeStyle = '#444';
                 ctx.lineWidth = 1;
                 ctx.setLineDash([]);
-                ctx.strokeRect(px, py, pw, ph);
+                ctx.strokeRect(drawX, drawY, drawPW, drawPH);
 
                 // Veneer dashed
                 var hasVeneer = part.has_veneer || (part.veneer_edge_count && part.veneer_edge_count > 0);
@@ -5038,63 +5046,56 @@ function calculateVeneerWithMaterials() {
                     ctx.strokeStyle = '#000';
                     ctx.lineWidth = 1.5;
                     ctx.setLineDash([3, 3]);
-                    ctx.strokeRect(px + 3, py + 3, pw - 6, ph - 6);
+                    ctx.strokeRect(drawX + 3, drawY + 3, drawPW - 6, drawPH - 6);
                     ctx.setLineDash([]);
                 }
 
-                // ============================================
-                // TEXT: "LABEL W×H" — auto-rotate if tall, shrink if small
-                // ============================================
-                if (pw > 15 && ph > 12) {
-                    var label = (part.label || 'PANEL').toUpperCase();
+                // Smart text (rotate if the drawn part is narrow)
+                if (drawPW > 12 && drawPH > 8) {
+                    var label = (part.label || 'PART').toUpperCase();
                     var dimText = (part.w / 10).toFixed(1) + '×' + (part.h / 10).toFixed(1);
-                    var fullText = label + ' ' + dimText;
-
-                    // Rotate if the part is significantly taller than wide
-                    var rotateText = (ph > pw * 1.6);
+                    var rotateText = (drawPH > drawPW * 1.6);
 
                     ctx.save();
-                    ctx.translate(px + pw / 2, py + ph / 2);
+                    ctx.translate(drawX + drawPW / 2, drawY + drawPH / 2);
                     if (rotateText) ctx.rotate(-Math.PI / 2);
 
-                    var availW = (rotateText ? ph : pw) - 8;
-                    var availH = (rotateText ? pw : ph) - 8;
+                    var availW = rotateText ? drawPH : drawPW;
+                    var availH = rotateText ? drawPW : drawPH;
 
-                    // Start with a large font, shrink until it fits
-                    var fontSize = 18;
-                    while (fontSize > 6) {
+                    var fontSize = 14;
+                    var drawn = false;
+                    while (fontSize > 4) {
                         ctx.font = 'bold ' + fontSize + 'px Arial';
-                        if (ctx.measureText(fullText).width <= availW &&
-                            fontSize * 1.3 <= availH) {
+                        var oneLine = label + ' ' + dimText;
+                        if (ctx.measureText(oneLine).width <= availW - 4 && fontSize * 1.4 <= availH - 4) {
+                            ctx.fillStyle = '#111';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(oneLine, 0, 0);
+                            drawn = true;
+                            break;
+                        }
+                        if (ctx.measureText(label).width <= availW - 4 &&
+                            ctx.measureText(dimText).width <= availW - 4 &&
+                            fontSize * 2.4 <= availH - 4) {
+                            ctx.fillStyle = '#111';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(label, 0, -fontSize * 0.6);
+                            ctx.fillText(dimText, 0, fontSize * 0.6);
+                            drawn = true;
                             break;
                         }
                         fontSize -= 1;
                     }
-
-                    ctx.fillStyle = '#1a1a1a';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(fullText, 0, 0);
-                    ctx.restore();
-                } else if (pw > 8 && ph > 6) {
-                    // Tiny parts: just dims, no label
-                    ctx.save();
-                    ctx.translate(px + pw / 2, py + ph / 2);
-                    var tRotate = (ph > pw * 1.6);
-                    if (tRotate) ctx.rotate(-Math.PI / 2);
-                    var dimOnly = Math.round(part.w / 10) + '×' + Math.round(part.h / 10);
-                    var fs = 10;
-                    while (fs > 4) {
-                        ctx.font = 'bold ' + fs + 'px Arial';
-                        var aW = (tRotate ? ph : pw) - 4;
-                        var aH = (tRotate ? pw : ph) - 4;
-                        if (ctx.measureText(dimOnly).width <= aW && fs * 1.3 <= aH) break;
-                        fs -= 1;
+                    if (!drawn) {
+                        ctx.font = 'bold 4px Arial';
+                        ctx.fillStyle = '#111';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(dimText, 0, 0);
                     }
-                    ctx.fillStyle = '#1a1a1a';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(dimOnly, 0, 0);
                     ctx.restore();
                 }
             });
