@@ -134,7 +134,7 @@ DEFAULT_MATERIALS = [
         "shades": [
             {"label": "Base", "hex": "#9E9E9E"},
             {"label": "Light", "hex": "#BEBEBE"},
-            {"label": "Dark", "hex": "#6B6B6B"},
+            {"label": "Dark", "hex": "#3A3A3A"},
             {"label": "Extra Light", "hex": "#DDDDDD"}
         ]
     }
