@@ -1258,6 +1258,102 @@ body {
 }
 }
 
+/* ============================================
+   MATERIAL COLORS
+============================================ */
+.material-card {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  transition: var(--transition);
+  cursor: pointer;
+}
+.material-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -8px var(--accent-glow);
+}
+.material-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.material-card-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+.material-card-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 12px;
+  font-weight: 500;
+}
+.material-shades {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.material-swatch {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  position: relative;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.material-swatch:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.material-shade-label {
+  font-size: 10px;
+  color: var(--text-mute);
+  text-align: center;
+  margin-top: 4px;
+}
+
+.material-edit-shade {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--bg-soft);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-soft);
+}
+.material-edit-swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 2px solid var(--border-strong);
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.material-edit-swatch input[type="color"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
+}
+.material-edit-hex {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-mute);
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+
 
 </style>
 </head>
@@ -1528,13 +1624,24 @@ body {
         Veneer
         <span class="kbd">3</span>
       </button>
+      <button class="nav-item" data-section="materials">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+  </svg>
+  Materials
+  <span class="kbd">5</span>
+</button>
       <button class="nav-item" data-section="history">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/>
           <polyline points="12 6 12 12 16 14"/>
         </svg>
         History
-        <span class="kbd">4</span>
+        <span class="kbd">6</span>
       </button>
     </div>
 
@@ -1787,7 +1894,51 @@ body {
           </div>
         </div>
       </div>
-
+<!-- MATERIALS -->
+<div id="section-materials" class="section hidden">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2>Material Colors</h2>
+        <div style="font-size: 12px; color: var(--text-mute); margin-top: 2px;">
+          Each material has 4 shades. Match colors in SketchUp and CutPro will recognize them.
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-ghost btn-sm" onclick="resetMaterialColors()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+          Reset
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openAddMaterial()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add material
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div id="materialsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;">
+        <!-- Filled by JS -->
+      </div>
+      <div id="materialsEmpty" class="empty-state hidden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="13.5" cy="6.5" r=".5"/>
+          <circle cx="17.5" cy="10.5" r=".5"/>
+          <circle cx="8.5" cy="7.5" r=".5"/>
+          <circle cx="6.5" cy="12.5" r=".5"/>
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+        </svg>
+        <h3>No materials yet</h3>
+        <p>Add a material with its color to get started.</p>
+      </div>
+    </div>
+  </div>
+</div>
       <!-- HISTORY -->
 <div id="section-history" class="section hidden">
   <div class="card">
@@ -1899,6 +2050,33 @@ body {
   </div>
 </div>
 
+<!-- MATERIAL EDIT MODAL -->
+<div class="modal" id="materialEditModal">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h2 id="materialEditTitle">Edit Material</h2>
+      <button class="modal-close" onclick="closeMaterialEdit()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field mb-4">
+        <label>Material Name</label>
+        <input type="text" id="materialEditName" placeholder="e.g. Oak">
+      </div>
+      <div style="font-size: 12px; color: var(--text-mute); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
+        4 Shades
+      </div>
+      <div id="materialEditShades" style="display: grid; gap: 10px;">
+        <!-- 4 rows generated by JS -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="deleteMaterial()" style="margin-right: auto;">Delete</button>
+      <button class="btn btn-ghost" onclick="closeMaterialEdit()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMaterialEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============================================
      PRINT CONTAINER — hidden on screen, shown on print
 ============================================ -->
@@ -1914,7 +2092,7 @@ body {
 ============================================ */
 
 // ============ STATE ============
-const API_URL = 'https://cutpro-optimizer.onrender.com/api';
+const API_URL = 'http://localhost:5000/api';
 let authToken = localStorage.getItem('cutpro_token');
 let currentUser = localStorage.getItem('cutpro_user');
 let parts = [];
@@ -2253,7 +2431,7 @@ function switchSection(name) {
     el.classList.toggle('active', el.dataset.section === name);
   });
 
-  const titles = { dashboard: 'Dashboard', parts: 'Parts', veneer: 'Veneer', history: 'History' };
+  const titles = { dashboard: 'Dashboard', parts: 'Parts', veneer: 'Veneer', materials: 'Materials', history: 'History' };
   document.getElementById('pageTitle').textContent = titles[name] || name;
 }
   if (name === 'history') loadHistory();
@@ -3472,6 +3650,272 @@ document.querySelectorAll('.modal').forEach(m => {
 document.getElementById('cmdk').addEventListener('click', e => {
   if (e.target.id === 'cmdk') closeCmdk();
 });
+
+
+/* ============================================
+   MATERIAL COLORS
+============================================ */
+let materialColors = [];
+let editingMaterialIndex = -1;
+
+// Load from backend
+async function loadMaterialColors() {
+  try {
+    const headers = {};
+    if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+
+    const res = await fetch(API_URL + '/material-colors', { headers });
+    const data = await res.json();
+
+    if (data.success) {
+      materialColors = data.materials || [];
+      renderMaterials();
+      console.log('✅ Loaded', materialColors.length, 'materials (' + (data.source || 'default') + ')');
+    }
+  } catch (err) {
+    console.warn('⚠️ Could not load material colors:', err.message);
+    // Fallback to empty
+    materialColors = [];
+    renderMaterials();
+  }
+}
+
+// Save to backend
+async function saveMaterialColors() {
+  if (!authToken) {
+    toast('Sign in to save materials', 'warn');
+    return;
+  }
+
+  try {
+    const res = await fetch(API_URL + '/material-colors', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + authToken
+      },
+      body: JSON.stringify({ materials: materialColors })
+    });
+    const data = await res.json();
+    if (data.success) {
+      toast('Materials saved', 'success');
+    } else {
+      toast('Save failed: ' + (data.error || 'unknown'), 'danger');
+    }
+  } catch (err) {
+    toast('Save failed: ' + err.message, 'danger');
+  }
+}
+
+// Render the grid
+function renderMaterials() {
+  const grid = document.getElementById('materialsGrid');
+  const empty = document.getElementById('materialsEmpty');
+
+  if (!materialColors.length) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+
+  grid.innerHTML = materialColors.map((m, i) => `
+    <div class="material-card" onclick="openEditMaterial(${i})">
+      <div class="material-card-header">
+        <div class="material-card-name">${escapeHtml(m.name)}</div>
+        <div class="material-card-badge">${m.shades.length} shades</div>
+      </div>
+      <div class="material-shades">
+        ${m.shades.map(s => `
+          <div>
+            <div class="material-swatch" style="background: ${s.hex};"></div>
+            <div class="material-shade-label">${s.label}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Open editor for existing material
+function openEditMaterial(index) {
+  editingMaterialIndex = index;
+  const m = materialColors[index];
+
+  document.getElementById('materialEditTitle').textContent = 'Edit ' + m.name;
+  document.getElementById('materialEditName').value = m.name;
+
+  renderEditShades(m.shades);
+  document.getElementById('materialEditModal').classList.add('show');
+}
+
+// Open editor for new material
+function openAddMaterial() {
+  editingMaterialIndex = -1;
+
+  document.getElementById('materialEditTitle').textContent = 'Add Material';
+  document.getElementById('materialEditName').value = '';
+
+  const defaultShades = [
+    { label: 'Base', hex: '#888888' },
+    { label: 'Light', hex: '#AAAAAA' },
+    { label: 'Dark', hex: '#555555' },
+    { label: 'Extra Light', hex: '#DDDDDD' }
+  ];
+
+  renderEditShades(defaultShades);
+  document.getElementById('materialEditModal').classList.add('show');
+}
+
+// Render the 4 shade editors
+function renderEditShades(shades) {
+  const container = document.getElementById('materialEditShades');
+  container.innerHTML = shades.map((s, i) => `
+    <div class="material-edit-shade">
+      <div class="material-edit-swatch" style="background: ${s.hex};">
+        <input type="color" value="${s.hex}" onchange="onShadeColorChange(${i}, this.value)">
+      </div>
+      <div style="flex: 1;">
+        <input type="text" value="${s.label}" 
+               onchange="onShadeLabelChange(${i}, this.value)"
+               style="background: transparent; border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font-size: 12.5px; color: var(--text); width: 100%;">
+        <div class="material-edit-hex" id="shadeHex_${i}">${s.hex}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+let editingShades = [];
+
+function renderEditShadesAndStore(shades) {
+  editingShades = JSON.parse(JSON.stringify(shades));
+  renderEditShades(editingShades);
+}
+
+function onShadeColorChange(index, hex) {
+  editingShades[index].hex = hex;
+  // Update the swatch background
+  const swatches = document.querySelectorAll('.material-edit-swatch');
+  if (swatches[index]) swatches[index].style.background = hex;
+  const hexLabel = document.getElementById('shadeHex_' + index);
+  if (hexLabel) hexLabel.textContent = hex;
+}
+
+function onShadeLabelChange(index, label) {
+  editingShades[index].label = label;
+}
+
+// Save the current edit
+async function saveMaterialEdit() {
+  const name = document.getElementById('materialEditName').value.trim();
+  if (!name) { toast('Please enter a material name', 'warn'); return; }
+
+  const newMaterial = {
+    id: name.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+    name: name,
+    shades: editingShades
+  };
+
+  if (editingMaterialIndex >= 0) {
+    materialColors[editingMaterialIndex] = newMaterial;
+  } else {
+    materialColors.push(newMaterial);
+  }
+
+  closeMaterialEdit();
+  renderMaterials();
+  await saveMaterialColors();
+  toast('Material saved', 'success');
+}
+
+function closeMaterialEdit() {
+  document.getElementById('materialEditModal').classList.remove('show');
+  editingMaterialIndex = -1;
+  editingShades = [];
+}
+
+// Delete current material
+async function deleteMaterial() {
+  if (editingMaterialIndex < 0) { closeMaterialEdit(); return; }
+  if (!confirm('Delete this material?')) return;
+
+  materialColors.splice(editingMaterialIndex, 1);
+  closeMaterialEdit();
+  renderMaterials();
+  await saveMaterialColors();
+  toast('Material deleted', 'info');
+}
+
+// Reset to defaults
+async function resetMaterialColors() {
+  if (!confirm('Reset all materials to default colors? This cannot be undone.')) return;
+
+  if (!authToken) {
+    toast('Sign in to reset', 'warn');
+    return;
+  }
+
+  try {
+    const res = await fetch(API_URL + '/material-colors/reset', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await res.json();
+    if (data.success) {
+      materialColors = data.materials;
+      renderMaterials();
+      toast('Materials reset to defaults', 'success');
+    }
+  } catch (err) {
+    toast('Reset failed: ' + err.message, 'danger');
+  }
+}
+
+// Patch openEditMaterial and openAddMaterial to use editingShades
+const _origOpenEditMaterial = openEditMaterial;
+openEditMaterial = function(index) {
+  editingMaterialIndex = index;
+  const m = materialColors[index];
+
+  document.getElementById('materialEditTitle').textContent = 'Edit ' + m.name;
+  document.getElementById('materialEditName').value = m.name;
+
+  editingShades = JSON.parse(JSON.stringify(m.shades));
+  renderEditShades(editingShades);
+  document.getElementById('materialEditModal').classList.add('show');
+};
+
+openAddMaterial = function() {
+  editingMaterialIndex = -1;
+
+  document.getElementById('materialEditTitle').textContent = 'Add Material';
+  document.getElementById('materialEditName').value = '';
+
+  editingShades = [
+    { label: 'Base', hex: '#888888' },
+    { label: 'Light', hex: '#AAAAAA' },
+    { label: 'Dark', hex: '#555555' },
+    { label: 'Extra Light', hex: '#DDDDDD' }
+  ];
+
+  renderEditShades(editingShades);
+  document.getElementById('materialEditModal').classList.add('show');
+};
+
+// Make sure materials load when switching to that section
+const _origSwitchSection = switchSection;
+switchSection = function(name) {
+  _origSwitchSection(name);
+  if (name === 'materials') {
+    loadMaterialColors();
+  }
+};
+
+// Also load on app start
+setTimeout(() => {
+  if (authToken) loadMaterialColors();
+}, 800);
 
 // ============ INIT ============
 (function init() {

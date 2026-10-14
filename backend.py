@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import io
 
 try:
@@ -39,22 +39,22 @@ from functools import wraps
 # ============================================
 # OPTIONAL LIBRARY DETECTION
 # ============================================
-print('📦 Loading libraries...')
+print('ðŸ“¦ Loading libraries...')
 try:
     import ezdxf
     EZDXF_AVAILABLE = True
-    print('✅ ezdxf loaded')
+    print('âœ… ezdxf loaded')
 except ImportError:
     EZDXF_AVAILABLE = False
-    print('❌ ezdxf not installed')
+    print('âŒ ezdxf not installed')
 
 try:
     import ifcopenshell
     IFCOPENSHELL_AVAILABLE = True
-    print('✅ ifcopenshell loaded')
+    print('âœ… ifcopenshell loaded')
 except ImportError:
     IFCOPENSHELL_AVAILABLE = False
-    print('❌ ifcopenshell not installed')
+    print('âŒ ifcopenshell not installed')
     
 
 logging.basicConfig(level=logging.INFO)
@@ -72,6 +72,28 @@ CORS(app,
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 
+# ============================================
+# MATERIAL COLORS SYSTEM
+# ============================================
+import backend_additions.material_colors as mat_colors
+material_colors_bp = mat_colors.material_colors_bp
+init_material_colors = mat_colors.init
+DEFAULT_MATERIALS = mat_colors.DEFAULT_MATERIALS
+
+
+
+from mongo_config import client as _mongo_client
+db = _mongo_client['cutpro']
+
+# Wire up the material colors collection
+material_colors_col = db['material_colors']
+init_material_colors(material_colors_col)
+
+# Register the material colors routes
+app.register_blueprint(material_colors_bp)
+print("âœ… Material colors endpoints registered")
+
+
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -81,12 +103,19 @@ PACKAGE_NAME = 'CutPro_v3.0.zip'
 # MONGODB (persistent storage)
 # ============================================
 from mongo_config import users_col, history_col, skp_col
+# Material colors module (added for CutPro Next)
+# Material colors module
+import backend_additions.material_colors as mat_colors
+
+material_colors_bp = mat_colors.material_colors_bp
+init_material_colors = mat_colors.init
+DEFAULT_MATERIALS = mat_colors.DEFAULT_MATERIALS
 
 
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        # Let OPTIONS preflight requests pass through — CORS handles them
+        # Let OPTIONS preflight requests pass through â€” CORS handles them
         if request.method == 'OPTIONS':
             return '', 200
 
@@ -317,7 +346,7 @@ def download_cutpro():
     """Redirects to the CutPro package hosted on GitHub Releases."""
     from flask import redirect
     GITHUB_RELEASE_URL = 'https://github.com/Biruke123/cutpro-optimizer/releases/download/v4.0/CutProSetup_v4.0.exe'
-    print(f"📥 Download requested → redirecting to GitHub Releases")
+    print(f"ðŸ“¥ Download requested â†’ redirecting to GitHub Releases")
     return redirect(GITHUB_RELEASE_URL, code=302)
 
 # ============================================
@@ -325,24 +354,24 @@ def download_cutpro():
 # ============================================
 
 # ============================================
-# ADAPTIVE SHEET SIZING & PACKING (v4 — MaxRects)
+# ADAPTIVE SHEET SIZING & PACKING (v4 â€” MaxRects)
 # ============================================
 
 def find_optimal_sheet_size(part_width, part_height, kerf):
     w = part_width + kerf
     h = part_height + kerf
     standard_sheets = [
-        (2440, 1220, '8×4 ft'), (3050, 1220, '10×4 ft'),
-        (3660, 1220, '12×4 ft'), (2440, 1830, '8×6 ft'),
-        (3660, 1830, '12×6 ft'), (4000, 2000, '13×6.5 ft'),
-        (5000, 2000, '16×6.5 ft'), (6000, 2000, '20×6.5 ft'),
+        (2440, 1220, '8Ã—4 ft'), (3050, 1220, '10Ã—4 ft'),
+        (3660, 1220, '12Ã—4 ft'), (2440, 1830, '8Ã—6 ft'),
+        (3660, 1830, '12Ã—6 ft'), (4000, 2000, '13Ã—6.5 ft'),
+        (5000, 2000, '16Ã—6.5 ft'), (6000, 2000, '20Ã—6.5 ft'),
     ]
     for sheet_w, sheet_h, name in standard_sheets:
         if (w <= sheet_w and h <= sheet_h) or (w <= sheet_h and h <= sheet_w):
             return sheet_w, sheet_h, f'Standard ({name})'
     custom_w = math.ceil(w / 100) * 100 + 100
     custom_h = math.ceil(h / 100) * 100 + 100
-    return custom_w, custom_h, f'Custom ({custom_w}×{custom_h} mm)'
+    return custom_w, custom_h, f'Custom ({custom_w}Ã—{custom_h} mm)'
 
 
 class MaxRectsPacker:
@@ -412,7 +441,7 @@ class MaxRectsPacker:
                 new_rects.append([fx, fy, fw, fh])
                 continue
 
-            # Overlap → split into up to 4 sub-rects
+            # Overlap â†’ split into up to 4 sub-rects
             # Left strip
             if placed_x > fx:
                 new_rects.append([fx, fy, placed_x - fx, fh])
@@ -565,7 +594,7 @@ def analyze_scrap_utilization(sheets, sheet_width, sheet_height):
     return sheets
 
 # ============================================
-# VENEER CALCULATOR — WITH EDGE COLOR DETECTION
+# VENEER CALCULATOR â€” WITH EDGE COLOR DETECTION
 # ============================================
 
 @app.route('/api/calculate-veneer', methods=['POST', 'OPTIONS'])
@@ -583,7 +612,7 @@ def calculate_veneer():
         edging = data.get('edging', False)
         
         print("\n" + "=" * 60)
-        print("🎨 VENEER CALCULATION")
+        print("ðŸŽ¨ VENEER CALCULATION")
         print("=" * 60)
         
         if not parts:
@@ -599,7 +628,7 @@ def calculate_veneer():
             material = part.get('material', '18mm Birch Plywood')
             label = part.get('label', 'PART')
             
-            # Read veneer fields — accept ANY value > 0
+            # Read veneer fields â€” accept ANY value > 0
             veneer_length_mm = float(part.get('veneer_length_mm', 0))
             has_veneer = part.get('has_veneer', False)
             
@@ -607,7 +636,7 @@ def calculate_veneer():
             
             # If has_veneer is true but length is 0, calculate from part dimensions
             # Only count parts that explicitly have veneer length
-            # No fallback — trust the frontend's veneer_length_mm
+            # No fallback â€” trust the frontend's veneer_length_mm
             
             if not has_veneer or veneer_length_mm <= 0:
                 non_veneer_parts_count += int(qty)
@@ -765,15 +794,15 @@ def optimize():
 # ============================================
 
 def parse_skp_file(file_path):
-    """Parse SKP file — handles BOTH scattered and normal files"""
+    """Parse SKP file â€” handles BOTH scattered and normal files"""
     try:
         with open(file_path, 'rb') as f:
             data = f.read()
         
         all_parts = []
-        print("🔍 SMART PANEL DETECTION from SKP...")
+        print("ðŸ” SMART PANEL DETECTION from SKP...")
         
-        print("🔍 DEBUG: Searching for PART_ patterns...")
+        print("ðŸ” DEBUG: Searching for PART_ patterns...")
         
         pattern_with_dims = re.compile(rb'PART_\d+_[A-Za-z0-9_]+_\d+x\d+')
         matches_with_dims = pattern_with_dims.findall(data)
@@ -785,9 +814,9 @@ def parse_skp_file(file_path):
         
         print("   Sample matches:")
         for m in matches_with_dims[:10]:
-            print(f"      → {m.decode('utf-8', errors='ignore')}")
+            print(f"      â†’ {m.decode('utf-8', errors='ignore')}")
         for m in matches_no_dims[:10]:
-            print(f"      → {m.decode('utf-8', errors='ignore')}")
+            print(f"      â†’ {m.decode('utf-8', errors='ignore')}")
         
         is_scattered = False
         matches = []
@@ -1134,7 +1163,7 @@ print(json.dumps(parts))
 
 def parse_file(file_path, filename):
     ext = filename.split('.')[-1].lower()
-    print(f"🔍 Parsing file: {filename} (extension: {ext})")
+    print(f"ðŸ” Parsing file: {filename} (extension: {ext})")
     if ext in ['dxf', 'dwg']:
         return parse_dxf_file(file_path)
     elif ext in ['ifc', 'rvt']:
@@ -1209,7 +1238,7 @@ def parse_file_endpoint():
         
         print(f" SUCCESS: Found {len(parts_data)} parts")
         for p in parts_data[:10]:
-            print(f"   {p['w']}×{p['h']} x{p['qty']} - {p['label']}")
+            print(f"   {p['w']}Ã—{p['h']} x{p['qty']} - {p['label']}")
         
         response = {
             'success': True,
@@ -1293,7 +1322,7 @@ def load_parts_from_db():
         doc = skp_col.find_one({'id': 'latest'})
         return doc['parts'] if doc else []
     except Exception as e:
-        print(f"⚠️ Could not load parts from MongoDB: {e}")
+        print(f"âš ï¸ Could not load parts from MongoDB: {e}")
         return []
 
 def save_parts_to_file(parts):
@@ -1307,13 +1336,13 @@ def save_parts_to_file(parts):
             },
             upsert=True
         )
-        print(f"💾 Saved {len(parts)} parts to MongoDB")
+        print(f"ðŸ’¾ Saved {len(parts)} parts to MongoDB")
     except Exception as e:
-        print(f"⚠️ Could not save parts: {e}")
+        print(f"âš ï¸ Could not save parts: {e}")
 
 # Initialize
 latest_sketchup_parts = load_parts_from_db()
-print(f"📂 Loaded {len(latest_sketchup_parts)} parts from MongoDB")
+print(f"ðŸ“‚ Loaded {len(latest_sketchup_parts)} parts from MongoDB")
 
 
 
@@ -1358,8 +1387,8 @@ def parts_from_sketchup():
                 skipped_wall += 1
                 continue
             
-            #  VENEER FIELDS — Match plugin field names EXACTLY
-                        #  VENEER FIELDS — Support BOTH field name conventions
+            #  VENEER FIELDS â€” Match plugin field names EXACTLY
+                        #  VENEER FIELDS â€” Support BOTH field name conventions
             # Try multiple field names for compatibility
             veneer_edges_count = int(p.get('veneer_edges', p.get('veneer_edge_count', 0)))
             veneer_length_mm_value = float(p.get('veneer_length_mm', p.get('veneer_total_length_mm', 0)))
@@ -1396,7 +1425,7 @@ def parts_from_sketchup():
         # Show first 10 parts
         for p in cleaned[:10]:
             v_tag = "" if p['has_veneer'] else "  "
-            print(f"   {v_tag} {p['width']}×{p['height']} - {p['label']} (veneer: {p['veneer_length_mm']}mm)")
+            print(f"   {v_tag} {p['width']}Ã—{p['height']} - {p['label']} (veneer: {p['veneer_length_mm']}mm)")
         
         # Save to global storage
         latest_sketchup_parts = cleaned
