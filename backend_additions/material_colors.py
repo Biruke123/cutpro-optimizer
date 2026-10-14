@@ -95,10 +95,11 @@ DEFAULT_MATERIALS = [
     {
         "id": "melamine", "name": "Melamine",
         "shades": [
-            {"label": "Base", "hex": "#F0EBE0"},
-            {"label": "Light", "hex": "#FAF7F0"},
-            {"label": "Dark", "hex": "#C4BEB2"},
-            {"label": "Extra Light", "hex": "#FFFFFF"}
+            {"label": "Base", "hex": "#E8DCC4"},
+            {"label": "Light", "hex": "#F2E9D6"},
+            {"label": "Dark", "hex": "#B8AC95"},
+            {"label": "Extra Light", "hex": "#F8F2E5"}
+
         ]
     },
     {
@@ -119,6 +120,15 @@ DEFAULT_MATERIALS = [
             {"label": "Extra Light", "hex": "#F0E0BF"}
         ]
     },
+    {
+    "id": "uv_board", "name": "UV Board",
+    "shades": [
+        {"label": "Base", "hex": "#F8F9FA"},
+        {"label": "Light", "hex": "#FCFCFD"},
+        {"label": "Dark", "hex": "#E8EBEE"},
+        {"label": "Extra Light", "hex": "#FFFFFF"}
+    ]
+},
     {
         "id": "mdf_gray", "name": "MDF Gray",
         "shades": [
