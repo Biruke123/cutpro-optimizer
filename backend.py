@@ -86,6 +86,10 @@ from mongo_config import users_col, history_col, skp_col
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        # Let OPTIONS preflight requests pass through — CORS handles them
+        if request.method == 'OPTIONS':
+            return '', 200
+
         token = None
         auth_header = request.headers.get('Authorization')
         if auth_header and auth_header.startswith('Bearer '):
