@@ -1,0 +1,3490 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CutPro — Cutlist Optimizer for Cabinet Makers</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230ea5e9'/%3E%3Cpath d='M8 8h4v16H8zM14 8h10v4H14zM14 14h8v4h-8zM14 20h10v4H14z' fill='white'/%3E%3C/svg%3E" />
+
+<style>
+/* ============================================
+   CUTPRO NEXT — WORLD-CLASS UI
+   Linear-inspired · Blue accent · All-feelings
+============================================ */
+
+
+/* ============================================
+   EDGE PREVIEW BUTTON
+============================================ */
+.edge-preview {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  color: var(--text-mute);
+}
+.edge-preview:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+.edge-preview.has-veneer {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.edge-preview.has-veneer:hover {
+  background: var(--accent);
+}
+.edge-preview.has-veneer:hover svg line[stroke="var(--accent)"] {
+  stroke: white;
+}
+.edge-preview svg {
+  display: block;
+}
+
+:root {
+  /* Dark theme (default) */
+  --bg: #08090b;
+  --bg-soft: #0c0d10;
+  --bg-elev: #101115;
+  --bg-hover: #16181d;
+  --bg-input: #0f1014;
+  --border: #1e2026;
+  --border-soft: #17181c;
+  --border-strong: #2a2d34;
+
+  --text: #f5f6f8;
+  --text-soft: #a1a6b0;
+  --text-mute: #6b7180;
+  --text-faint: #4a4e58;
+
+  --accent: #0ea5e9;
+  --accent-soft: #0ea5e91a;
+  --accent-glow: #0ea5e933;
+  --accent-hover: #38bdf8;
+  --accent-press: #0284c7;
+
+  --success: #22c55e;
+  --success-soft: #22c55e1a;
+  --warn: #f59e0b;
+  --warn-soft: #f59e0b1a;
+  --danger: #ef4444;
+  --danger-soft: #ef44441a;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 20px 48px rgba(0,0,0,0.5);
+
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --transition: 220ms var(--ease);
+
+  --sidebar-w: 240px;
+  --topbar-h: 60px;
+
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
+
+[data-theme="light"] {
+  --bg: #fbfbfc;
+  --bg-soft: #f5f6f8;
+  --bg-elev: #ffffff;
+  --bg-hover: #f3f4f6;
+  --bg-input: #ffffff;
+  --border: #e5e7eb;
+  --border-soft: #eef0f3;
+  --border-strong: #d1d5db;
+
+  --text: #0a0a0c;
+  --text-soft: #4b5563;
+  --text-mute: #6b7280;
+  --text-faint: #9ca3af;
+
+  --accent: #0284c7;
+  --accent-soft: #0284c71a;
+  --accent-glow: #0284c733;
+  --accent-hover: #0369a1;
+  --accent-press: #075985;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 20px 48px rgba(0,0,0,0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background var(--transition), color var(--transition);
+}
+
+::selection { background: var(--accent); color: white; }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+/* ============================================
+   LAYOUT & SHELL
+============================================ */
+.app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: var(--bg-soft);
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 40;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 20px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+.brand-logo {
+  width: 26px; height: 26px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-press));
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 4px 12px var(--accent-glow);
+}
+.brand-logo svg { width: 15px; height: 15px; }
+.brand-name span { color: var(--accent); }
+
+.nav-group { margin-bottom: 24px; }
+.nav-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  padding: 0 10px 8px;
+  font-weight: 600;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  position: relative;
+}
+.nav-item:hover { background: var(--bg-hover); color: var(--text); }
+.nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 0 3px 3px 0;
+}
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-item .kbd {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-faint);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.user-chip:hover { background: var(--bg-hover); }
+.user-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.user-email { font-size: 11px; color: var(--text-mute); overflow: hidden; text-overflow: ellipsis; }
+
+/* ============================================
+   MAIN AREA
+============================================ */
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.topbar {
+  height: var(--topbar-h);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+}
+
+.topbar-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.topbar-title h1 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar-title .save-status {
+  font-size: 12px;
+  color: var(--text-mute);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.topbar-title .save-status.saved { color: var(--success); }
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ============================================
+   BUTTONS
+============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: var(--transition);
+  white-space: nowrap;
+  user-select: none;
+}
+.btn svg { width: 14px; height: 14px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 1px 3px rgba(0,0,0,0.2), 0 0 20px -8px var(--accent-glow);
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 4px 12px rgba(0,0,0,0.25), 0 0 28px -6px var(--accent-glow);
+  transform: translateY(-1px);
+}
+.btn-primary:active { transform: translateY(0); background: var(--accent-press); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-soft);
+  border-color: var(--border);
+}
+.btn-ghost:hover { background: var(--bg-hover); color: var(--text); border-color: var(--border-strong); }
+
+.btn-subtle {
+  background: var(--bg-hover);
+  color: var(--text);
+  border-color: transparent;
+}
+.btn-subtle:hover { background: var(--border); }
+
+.btn-danger { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
+.btn-danger:hover { background: var(--danger); color: white; }
+
+.btn-icon {
+  padding: 8px;
+  min-width: 34px;
+  height: 34px;
+}
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-lg { padding: 12px 20px; font-size: 14px; }
+.btn-xl { padding: 14px 28px; font-size: 15px; border-radius: var(--radius); }
+
+/* ============================================
+   CONTENT
+============================================ */
+.content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 20px;
+}
+
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.card-header h2 {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.card-actions { display: flex; gap: 6px; align-items: center; }
+.card-body { padding: 16px 18px; }
+
+/* ============================================
+   INPUTS
+============================================ */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-soft);
+  letter-spacing: 0.005em;
+}
+.field input, .field select, .field textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 11px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  transition: var(--transition);
+  width: 100%;
+}
+.field input:hover, .field select:hover { border-color: var(--border-strong); }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.field input::placeholder { color: var(--text-faint); }
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+/* Quick-add bar */
+.quick-add {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  background: var(--bg-soft);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-soft);
+  margin-bottom: 12px;
+}
+.quick-add input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  padding: 4px 8px;
+}
+.quick-add input:focus { outline: none; }
+
+/* ============================================
+   TABLE
+============================================ */
+.parts-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+.parts-table thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-elev);
+  z-index: 2;
+}
+.parts-table tbody td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.parts-table tbody tr:hover { background: var(--bg-hover); }
+.parts-table input {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 4px 6px;
+  width: 100%;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  border-radius: 4px;
+  transition: var(--transition);
+}
+.parts-table input:hover { border-color: var(--border); }
+.parts-table input:focus {
+  outline: none;
+  background: var(--bg-input);
+  border-color: var(--accent);
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-mute);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.icon-btn:hover { background: var(--bg-hover); color: var(--text); }
+.icon-btn.danger:hover { background: var(--danger-soft); color: var(--danger); }
+.icon-btn.veneer { color: var(--accent); }
+
+/* ============================================
+   BADGES
+============================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--bg-hover);
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+}
+.badge.success { background: var(--success-soft); color: var(--success); border-color: transparent; }
+.badge.accent { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.badge.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.badge.danger { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
+
+/* ============================================
+   EMPTY STATE
+============================================ */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-mute);
+}
+.empty-state svg {
+  width: 48px;
+  height: 48px;
+  color: var(--text-faint);
+  margin-bottom: 12px;
+}
+.empty-state h3 {
+  color: var(--text);
+  font-size: 15px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.empty-state p { font-size: 13px; max-width: 320px; margin: 0 auto 16px; }
+
+/* ============================================
+   TOASTS
+============================================ */
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  z-index: 1000;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  min-width: 280px;
+  max-width: 420px;
+  font-size: 13px;
+  color: var(--text);
+  animation: toast-in 320ms var(--ease);
+  backdrop-filter: blur(12px);
+}
+.toast.success { border-left-color: var(--success); }
+.toast.warn { border-left-color: var(--warn); }
+.toast.danger { border-left-color: var(--danger); }
+.toast.leaving { animation: toast-out 220ms var(--ease) forwards; }
+.toast svg { flex-shrink: 0; }
+.toast.success svg { color: var(--success); }
+.toast.danger svg { color: var(--danger); }
+.toast.warn svg { color: var(--warn); }
+.toast svg { color: var(--accent); }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(30px) scale(0.95); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes toast-out {
+  to { opacity: 0; transform: translateX(30px) scale(0.95); }
+}
+
+/* ============================================
+   MODALS
+============================================ */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fade-in 200ms var(--ease);
+}
+.modal.show { display: flex; }
+.modal-panel {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modal-in 320ms var(--ease);
+  position: relative;
+}
+.modal-panel.wide { max-width: 720px; }
+.modal-header {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-header h2 { font-size: 16px; font-weight: 600; }
+.modal-body { padding: 20px 22px; }
+.modal-footer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-mute);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: var(--transition);
+}
+.modal-close:hover { background: var(--bg-hover); color: var(--text); }
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ============================================
+   COMMAND PALETTE (Ctrl+K)
+============================================ */
+.cmdk {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(6px);
+  z-index: 600;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  animation: fade-in 150ms var(--ease);
+}
+.cmdk.show { display: flex; }
+.cmdk-panel {
+  width: 100%;
+  max-width: 560px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: modal-in 240ms var(--ease);
+}
+.cmdk-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+  border-bottom: 1px solid var(--border);
+}
+.cmdk-input:focus { outline: none; }
+.cmdk-list { max-height: 400px; overflow-y: auto; padding: 6px; }
+.cmdk-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-soft);
+  font-size: 13.5px;
+}
+.cmdk-item:hover, .cmdk-item.active {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+.cmdk-item svg { width: 15px; height: 15px; color: var(--text-mute); }
+.cmdk-item.active svg { color: var(--accent); }
+.cmdk-item .kbd {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-faint);
+}
+
+/* ============================================
+   LANDING PAGE
+============================================ */
+.landing {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-nav {
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 10;
+}
+
+.landing-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px 100px;
+  position: relative;
+  z-index: 10;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+.hero-bg::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+  filter: blur(60px);
+  opacity: 0.7;
+}
+.hero-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  opacity: 0.4;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 40px;
+  font-size: 12.5px;
+  color: var(--text-soft);
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.hero-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.hero-title {
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 20px;
+  max-width: 900px;
+  background: linear-gradient(180deg, var(--text) 0%, var(--text-soft) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-title .grad {
+  background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-sub {
+  font-size: clamp(15px, 1.5vw, 18px);
+  color: var(--text-soft);
+  max-width: 620px;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.hero-ctas {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 60px;
+}
+
+.hero-preview {
+  width: 100%;
+  max-width: 1000px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-xl);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg), 0 0 80px -20px var(--accent-glow);
+  overflow: hidden;
+  position: relative;
+}
+
+.features {
+  padding: 80px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+}
+.features h2 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 12px;
+}
+.features .sub {
+  text-align: center;
+  color: var(--text-soft);
+  margin-bottom: 48px;
+  font-size: 15px;
+}
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.feature-card {
+  padding: 22px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: var(--transition);
+}
+.feature-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -8px var(--accent-glow);
+}
+.feature-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.feature-icon svg { width: 20px; height: 20px; }
+.feature-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.feature-card p {
+  color: var(--text-soft);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.landing-footer {
+  padding: 32px 40px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-mute);
+  font-size: 12.5px;
+  position: relative;
+  z-index: 10;
+}
+
+/* ============================================
+   SKELETON LOADING
+============================================ */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-hover) 0%, var(--border) 50%, var(--bg-hover) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   STATS
+============================================ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+.stat {
+  padding: 14px 16px;
+  background: var(--bg-soft);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-soft);
+}
+.stat .label {
+  font-size: 11px;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.stat .value {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.stat .value.accent { color: var(--accent); }
+.stat .value.success { color: var(--success); }
+.stat .value.warn { color: var(--warn); }
+
+/* ============================================
+   UTILITY
+============================================ */
+.hidden { display: none !important; }
+.text-mute { color: var(--text-mute); }
+.text-soft { color: var(--text-soft); }
+.flex { display: flex; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.mt-2 { margin-top: 8px; }
+.mt-4 { margin-top: 16px; }
+.mb-2 { margin-bottom: 8px; }
+.mb-4 { margin-bottom: 16px; }
+.w-full { width: 100%; }
+
+
+/* ============================================
+   EDGE BANDING MODAL
+============================================ */
+.edge-band-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.edge-band-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  transition: var(--transition);
+}
+.edge-band-row:hover {
+  border-color: var(--border-strong);
+}
+.edge-band-row.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.edge-band-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+.edge-band-icon svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-mute);
+}
+.edge-band-row.active .edge-band-icon {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.edge-band-row.active .edge-band-icon svg {
+  color: white;
+}
+.edge-band-info {
+  flex: 1;
+  min-width: 0;
+}
+.edge-band-info .label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.edge-band-info .length {
+  font-size: 11px;
+  color: var(--text-mute);
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+.edge-band-select {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  min-width: 130px;
+  transition: var(--transition);
+}
+.edge-band-select:hover { border-color: var(--border-strong); }
+.edge-band-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.icon-btn.veneer-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+.icon-btn.veneer-active:hover {
+  background: var(--accent);
+  color: white;
+}
+
+
+/* ============================================
+   PRINT LAYOUT — A4, one sheet per page
+============================================ */
+#printContainer {
+  display: none;
+}
+
+@media print {
+  /* Hide everything else */
+  body > *:not(#printContainer) {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #000 !important;
+  }
+
+  #printContainer {
+    display: block !important;
+    width: 100% !important;
+    background: white !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  /* One sheet per A4 page */
+  .print-sheet {
+    page-break-after: always;
+    break-after: page;
+    page-break-inside: avoid;
+    width: 190mm;
+    height: 277mm;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+    background: #fff;
+  }
+  .print-sheet:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  /* Thin header */
+  .print-sheet-header {
+    font-size: 11px;
+    font-weight: 700;
+    padding-bottom: 5px;
+    margin-bottom: 8px;
+    border-bottom: 2px solid #000;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  /* Bottom section: left info + right diagram */
+  .print-bottom {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  /* Left column */
+  .print-left-col {
+    flex: 0 0 130px;
+    font-size: 8.5px;
+    line-height: 1.4;
+  }
+
+  .plc-block {
+    margin-bottom: 8px;
+    border-top: 1px solid #333;
+    padding-top: 3px;
+  }
+
+  .plc-title {
+    font-weight: 700;
+    font-size: 8.5px;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .plc-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 1px 0;
+    border-bottom: 1px dotted #ccc;
+  }
+
+  .plc-table {
+    width: 100%;
+    font-size: 8px;
+    border-collapse: collapse;
+    line-height: 1.4;
+  }
+
+  .plc-table td {
+    padding: 1px 3px;
+    border-bottom: 1px dotted #e0e0e0;
+  }
+
+  /* Right column: diagram */
+  .print-right-col {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  min-width: 0;
+}
+
+.print-right-col canvas {
+  display: block;
+  border: 2px solid #000;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: 100%;
+}
+}
+
+
+</style>
+</head>
+<body>
+<!-- Everything else will be in Parts 2 & 3 -->
+<div id="toast-container"></div>
+<div class="cmdk" id="cmdk">
+  <div class="cmdk-panel">
+    <input type="text" class="cmdk-input" id="cmdkInput" placeholder="Search commands..." autocomplete="off">
+    <div class="cmdk-list" id="cmdkList"></div>
+  </div>
+</div>
+<!-- ============================================
+     LANDING PAGE
+============================================ -->
+<div id="landingPage" class="landing">
+  <!-- Background effects -->
+  <div class="hero-bg"></div>
+
+  <!-- Top Nav -->
+  <nav class="landing-nav">
+    <div class="brand" style="padding: 0;">
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h5v16H4z"/>
+          <path d="M11 4h9v4h-9z"/>
+          <path d="M11 12h7v4h-7z"/>
+          <path d="M11 19h9v1h-9z"/>
+        </svg>
+      </div>
+      <div class="brand-name">Cut<span>Pro</span></div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-ghost" onclick="openLogin()">Sign in</button>
+      <button class="btn btn-primary" onclick="openSignup()">Get started</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="landing-hero">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Trusted by cabinet makers across Ethiopia
+    </div>
+
+    <h1 class="hero-title">
+      Cut more sheets.<br>
+      Waste <span class="grad">less material.</span>
+    </h1>
+
+    <p class="hero-sub">
+      CutPro is the fastest cutlist optimizer for cabinet makers and woodworkers. 
+      Send your SketchUp parts, get the perfect sheet layout, print shop-ready plans. 
+      In seconds.
+    </p>
+
+    <div class="hero-ctas">
+      <button class="btn btn-primary btn-xl" onclick="openDemo()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        Try Live Demo
+      </button>
+      <button class="btn btn-ghost btn-xl" onclick="scrollToDownload()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download for SketchUp
+      </button>
+    </div>
+
+    <!-- Preview mock -->
+    <div class="hero-preview">
+      <svg viewBox="0 0 1000 562" style="width: 100%; height: 100%;">
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#0ea5e9" stop-opacity="0.15"/>
+            <stop offset="1" stop-color="#8b5cf6" stop-opacity="0.15"/>
+          </linearGradient>
+        </defs>
+        <rect width="1000" height="562" fill="#0c0d10"/>
+        <!-- Fake sidebar -->
+        <rect x="0" y="0" width="200" height="562" fill="#08090b"/>
+        <rect x="16" y="24" width="24" height="24" rx="6" fill="#0ea5e9"/>
+        <rect x="52" y="30" width="80" height="12" rx="3" fill="#1e2026"/>
+        <rect x="16" y="80" width="120" height="10" rx="3" fill="#1e2026"/>
+        <rect x="16" y="110" width="140" height="10" rx="3" fill="#1e2026"/>
+        <rect x="16" y="140" width="100" height="10" rx="3" fill="#0ea5e9" opacity="0.4"/>
+        <rect x="16" y="170" width="120" height="10" rx="3" fill="#1e2026"/>
+        <rect x="16" y="200" width="90" height="10" rx="3" fill="#1e2026"/>
+        <!-- Fake topbar -->
+        <rect x="200" y="0" width="800" height="60" fill="#08090b"/>
+        <rect x="220" y="22" width="200" height="16" rx="4" fill="#1e2026"/>
+        <rect x="880" y="18" width="100" height="24" rx="6" fill="#0ea5e9"/>
+        <!-- Fake content: sheet diagram -->
+        <rect x="230" y="90" width="740" height="440" rx="10" fill="#0c0d10" stroke="#1e2026"/>
+        <rect x="250" y="110" width="700" height="400" fill="none" stroke="#1e2026"/>
+        <!-- Parts -->
+        <rect x="255" y="115" width="340" height="240" fill="#0ea5e9" opacity="0.15" stroke="#0ea5e9" stroke-opacity="0.4"/>
+        <text x="425" y="235" text-anchor="middle" fill="#0ea5e9" font-family="monospace" font-size="12">SIDE PANEL</text>
+        <text x="425" y="255" text-anchor="middle" fill="#0ea5e9" font-family="monospace" font-size="10" opacity="0.7">80.0 × 60.0</text>
+
+        <rect x="600" y="115" width="345" height="115" fill="#8b5cf6" opacity="0.15" stroke="#8b5cf6" stroke-opacity="0.4"/>
+        <text x="772" y="175" text-anchor="middle" fill="#8b5cf6" font-family="monospace" font-size="12">SHELF</text>
+
+        <rect x="600" y="235" width="345" height="120" fill="#22c55e" opacity="0.15" stroke="#22c55e" stroke-opacity="0.4"/>
+        <text x="772" y="298" text-anchor="middle" fill="#22c55e" font-family="monospace" font-size="12">DOOR</text>
+
+        <rect x="255" y="360" width="690" height="145" fill="#f59e0b" opacity="0.15" stroke="#f59e0b" stroke-opacity="0.4"/>
+        <text x="600" y="435" text-anchor="middle" fill="#f59e0b" font-family="monospace" font-size="12">DRAWER × 4</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <h2>Everything you need. Nothing you don't.</h2>
+    <p class="sub">Built for cabinet makers who'd rather build furniture than fiddle with software.</p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <h3>Instant optimization</h3>
+        <p>Cutlist in milliseconds, not minutes. Advanced MaxRects algorithm keeps waste under 15%.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h3>SketchUp plugin</h3>
+        <p>One-click install. Sends parts straight from your SketchUp model — no export, no CSV.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <h3>Edge banding</h3>
+        <p>Mark veneer edges right in SketchUp. CutPro calculates total banding length automatically.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <h3>Shop-ready print</h3>
+        <p>Print or save PDF. One sheet per page. Labelled. Ready for the workshop floor.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 7h-9"/>
+            <path d="M14 17H5"/>
+            <circle cx="17" cy="17" r="3"/>
+            <circle cx="7" cy="7" r="3"/>
+          </svg>
+        </div>
+        <h3>Material detection</h3>
+        <p>Brown = Oak, gray = MDF. CutPro picks the sheet automatically — no manual setup.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <h3>Cloud history</h3>
+        <p>Every project saved. Reopen, duplicate, tweak — anywhere, on any device.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download CTA -->
+  <section id="downloadSection" style="padding: 60px 24px; text-align: center; position: relative; z-index: 10;">
+    <h2 style="font-size: 28px; margin-bottom: 12px;">Download the Windows installer</h2>
+    <p style="color: var(--text-soft); margin-bottom: 24px;">Includes the SketchUp plugin + auto-installer.</p>
+    <button class="btn btn-primary btn-xl" onclick="downloadCutPro()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Download CutPro Setup
+    </button>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div>© 2026 CutPro · Built by BLM</div>
+    <div style="display: flex; gap: 16px;">
+      <span style="cursor: pointer;" onclick="openDemo()">Demo</span>
+      <span style="cursor: pointer;" onclick="openLogin()">Sign in</span>
+      <a href="https://github.com/Biruke123/cutpro-optimizer/releases" target="_blank" style="color: inherit; text-decoration: none;">Releases</a>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ============================================
+     MAIN APP (hidden until logged in / demo)
+============================================ -->
+<div id="appShell" class="app-shell hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h5v16H4z"/>
+          <path d="M11 4h9v4h-9z"/>
+          <path d="M11 12h7v4h-7z"/>
+          <path d="M11 19h9v1h-9z"/>
+        </svg>
+      </div>
+      <div class="brand-name">Cut<span>Pro</span></div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Workspace</div>
+      <button class="nav-item active" data-section="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="9"/>
+          <rect x="14" y="3" width="7" height="5"/>
+          <rect x="14" y="12" width="7" height="9"/>
+          <rect x="3" y="16" width="7" height="5"/>
+        </svg>
+        Dashboard
+        <span class="kbd">1</span>
+      </button>
+      <button class="nav-item" data-section="parts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"/>
+          <line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/>
+          <line x1="3" y1="12" x2="3.01" y2="12"/>
+          <line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+        Parts
+        <span class="kbd">2</span>
+      </button>
+      <button class="nav-item" data-section="veneer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+        </svg>
+        Veneer
+        <span class="kbd">3</span>
+      </button>
+      <button class="nav-item" data-section="history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        History
+        <span class="kbd">4</span>
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Actions</div>
+      <button class="nav-item" onclick="autoLoadSketchUpParts()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"/>
+  </svg>
+  Sync SketchUp
+  <span class="kbd">⇧R</span>
+</button>
+      <button class="nav-item" onclick="runOptimization()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        Calculate
+        <span class="kbd">⌘↵</span>
+      </button>
+      <button class="nav-item" onclick="printResults()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 6 2 18 2 18 9"/>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        Print
+        <span class="kbd">⌘P</span>
+      </button>
+      <button class="nav-item" onclick="openCmdk()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Command palette
+        <span class="kbd">⌘K</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-chip" id="userChip" onclick="toggleUserMenu()">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">Guest</div>
+          <div class="user-email" id="userEmail">demo mode</div>
+        </div>
+      </div>
+      <button class="nav-item" onclick="toggleTheme()" style="font-size: 12px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <span id="themeLabel">Light mode</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1 id="pageTitle">Dashboard</h1>
+        <div class="save-status saved" id="saveStatus">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Saved</span>
+        </div>
+      </div>
+      <span class="badge accent" id="syncBadge" style="margin-left: 8px; font-size: 10.5px;">
+        <span class="dot" style="width: 5px; height: 5px; border-radius: 50%; background: var(--success); display: inline-block; animation: pulse 2s infinite;"></span>
+          Live sync
+      </span>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-icon" title="Undo (Ctrl+Z)" onclick="undo()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 14 4 9 9 4"/>
+            <path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+          </svg>
+        </button>
+        <button class="btn btn-ghost btn-icon" title="Redo (Ctrl+Y)" onclick="redo()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 14 20 9 15 4"/>
+            <path d="M4 20v-7a4 4 0 0 1 4-4h12"/>
+          </svg>
+        </button>
+        <button class="btn btn-ghost btn-icon" title="Command palette (Ctrl+K)" onclick="openCmdk()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+        <button class="btn btn-primary" onclick="runOptimization()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Calculate
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- DASHBOARD -->
+      <div id="section-dashboard" class="section">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h2>Sheet Settings</h2></div>
+            <div class="card-body">
+              <div class="field-grid">
+                <div class="field">
+                  <label>Sheet Width (cm)</label>
+                  <input type="number" id="sheetWidth" value="244" step="0.1">
+                </div>
+                <div class="field">
+                  <label>Sheet Height (cm)</label>
+                  <input type="number" id="sheetHeight" value="122" step="0.1">
+                </div>
+                <div class="field">
+                  <label>Kerf (mm)</label>
+                  <input type="number" id="kerf" value="3" step="0.5">
+                </div>
+                <div class="field">
+                  <label>Unit</label>
+                  <select id="unitSelector">
+                    <option value="cm" selected>cm</option>
+                    <option value="mm">mm</option>
+                    <option value="in">in</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mt-4" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <span class="text-mute" style="font-size: 11px; align-self: center; margin-right: 4px;">Presets:</span>
+                <button class="btn btn-ghost btn-sm" onclick="setPreset(244, 122)">8×4 ft</button>
+                <button class="btn btn-ghost btn-sm" onclick="setPreset(305, 122)">10×4 ft</button>
+                <button class="btn btn-ghost btn-sm" onclick="setPreset(244, 183)">8×6 ft</button>
+                <button class="btn btn-ghost btn-sm" onclick="setPreset(366, 122)">12×4 ft</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Quick Stats</h2>
+              <button class="btn btn-ghost btn-sm" onclick="loadSample()">Load sample</button>
+            </div>
+            <div class="card-body">
+              <div class="stat-grid">
+                <div class="stat">
+                  <div class="label">Total Parts</div>
+                  <div class="value accent" id="statParts">0</div>
+                </div>
+                <div class="stat">
+                  <div class="label">Total Area</div>
+                  <div class="value" id="statArea">0.00 m²</div>
+                </div>
+                <div class="stat">
+                  <div class="label">Sheets</div>
+                  <div class="value" id="statSheets">0</div>
+                </div>
+                <div class="stat">
+                  <div class="label">Waste</div>
+                  <div class="value warn" id="statWaste">0%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="resultsContent" class="mt-4"></div>
+      </div>
+
+      <!-- PARTS -->
+      <div id="section-parts" class="section hidden">
+        <div class="card">
+          <div class="card-header">
+            <h2>Parts List</h2>
+            <div class="card-actions">
+              <button class="btn btn-ghost btn-sm" onclick="mergeDuplicates()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                </svg>
+                Merge
+              </button>
+              <button class="btn btn-ghost btn-sm" onclick="clearAllParts()">Clear</button>
+              <button class="btn btn-primary btn-sm" onclick="addPart()">+ Add Part</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="quick-add">
+              <input type="text" id="quickAddInput" placeholder="Quick add: 60x40x4 oak   →   press Enter" onkeydown="if(event.key==='Enter')quickAdd()">
+            </div>
+            <div style="max-height: 500px; overflow: auto;">
+              <table class="parts-table" id="partsTable">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;">#</th>
+                    <th>Width</th>
+                    <th>Length</th>
+                    <th style="width: 70px;">Qty</th>
+                    <th>Material</th>
+                    <th>Label</th>
+                    <th style="width: 40px;"></th>
+                    <th style="width: 40px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="partsBody"></tbody>
+              </table>
+              <div id="partsEmpty" class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                  <line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
+                <h3>No parts yet</h3>
+                <p>Add parts manually or load a sample to see how CutPro works.</p>
+                <div style="display: flex; gap: 8px; justify-content: center;">
+                  <button class="btn btn-ghost btn-sm" onclick="loadSample()">Load sample</button>
+                  <button class="btn btn-primary btn-sm" onclick="addPart()">Add first part</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VENEER -->
+      <div id="section-veneer" class="section hidden">
+        <div class="card">
+          <div class="card-header">
+            <h2>Veneer Calculator</h2>
+            <button class="btn btn-primary" onclick="calculateVeneer()">Calculate</button>
+          </div>
+          <div class="card-body">
+            <div class="field-grid">
+              <div class="field">
+                <label>Roll Width (m)</label>
+                <input type="number" id="veneerWidth" value="0.6" step="0.1">
+              </div>
+              <div class="field">
+                <label>Waste Factor (%)</label>
+                <input type="number" id="veneerWaste" value="10">
+              </div>
+              <div class="field">
+                <label>Edging Included</label>
+                <select id="veneerEdging">
+                  <option value="no">No</option>
+                  <option value="yes">Yes (+10%)</option>
+                </select>
+              </div>
+            </div>
+            <div id="veneerResult" class="mt-4"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORY -->
+<div id="section-history" class="section hidden">
+  <div class="card">
+    <div class="card-header">
+      <h2>Your Projects</h2>
+      <div class="card-actions">
+        <button class="btn btn-ghost btn-sm" onclick="loadHistory()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+          Refresh
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="clearAllHistory()">
+          Clear all
+        </button>
+      </div>
+    </div>
+    <div class="card-body" id="historyBody">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <h3>No saved projects yet</h3>
+        <p>Run an optimization and it will be saved here automatically.</p>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+  </main>
+</div>
+
+
+<!-- ============================================
+     AUTH MODAL
+============================================ -->
+<div class="modal" id="authModal">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h2 id="authTitle">Sign in</h2>
+      <button class="modal-close" onclick="closeModal('authModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field mb-4">
+        <label>Username</label>
+        <input type="text" id="authUsername" placeholder="your-username" autocomplete="username">
+      </div>
+      <div class="field mb-4" id="emailField" style="display: none;">
+        <label>Email (optional)</label>
+        <input type="email" id="authEmail" placeholder="you@example.com">
+      </div>
+      <div class="field mb-4">
+        <label>Password</label>
+        <input type="password" id="authPassword" placeholder="At least 6 characters" autocomplete="current-password">
+      </div>
+      <div id="authMessage" style="font-size: 12.5px; color: var(--danger); min-height: 18px;"></div>
+    </div>
+    <div class="modal-footer">
+      <div style="flex: 1; font-size: 12.5px; color: var(--text-mute); align-self: center;">
+        <span id="authSwitchText">Don't have an account?</span>
+        <a href="#" onclick="toggleAuthMode(event); return false;" style="color: var(--accent); text-decoration: none; font-weight: 500;">Switch</a>
+      </div>
+      <button class="btn btn-ghost" onclick="closeModal('authModal')">Cancel</button>
+      <button class="btn btn-primary" id="authSubmit" onclick="submitAuth()">Sign in</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ============================================
+     EDGE BANDING MODAL
+============================================ -->
+<div class="modal" id="edgeBandModal">
+  <div class="modal-panel wide">
+    <div class="modal-header">
+      <div>
+        <h2>Edge Banding</h2>
+        <div style="font-size: 12px; color: var(--text-mute); margin-top: 2px;">
+          <span id="edgeBandPartLabel">Part</span> · <span id="edgeBandPartSize">0 × 0 cm</span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeEdgeBandModal()">&times;</button>
+    </div>
+
+    <div class="modal-body" style="padding: 8px 22px 4px;">
+      <div class="edge-band-grid" id="edgeBandGrid">
+        <!-- Populated by JS -->
+      </div>
+      <div style="padding: 14px 0; border-top: 1px solid var(--border-soft); margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.05em;">Total veneer length</div>
+          <div style="font-size: 20px; font-weight: 700; color: var(--accent);" id="edgeBandTotal">0 cm</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.05em;">Edges marked</div>
+          <div style="font-size: 20px; font-weight: 700;" id="edgeBandCount">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="clearEdgeBands()">Clear all</button>
+      <button class="btn btn-ghost" onclick="selectAllEdgeBands()">Select all</button>
+      <button class="btn btn-primary" onclick="saveEdgeBands()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     PRINT CONTAINER — hidden on screen, shown on print
+============================================ -->
+<div id="printContainer"></div>
+
+</body>
+
+
+<script>
+/* ============================================
+   CUTPRO NEXT — APP LOGIC
+   All features: toasts, cmdk, undo, demo, etc.
+============================================ */
+
+// ============ STATE ============
+const API_URL = 'https://cutpro-optimizer.onrender.com/api';
+let authToken = localStorage.getItem('cutpro_token');
+let currentUser = localStorage.getItem('cutpro_user');
+let parts = [];
+let partIdCounter = 0;
+let currentUnit = 'cm';
+let isDemoMode = false;
+let currentProjectName = '';
+let lastOptimizationData = null;
+
+// Undo/Redo stacks
+let undoStack = [];
+let redoStack = [];
+
+// ============ THEME ============
+function toggleTheme() {
+  const html = document.documentElement;
+  const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', newTheme);
+  localStorage.setItem('cutpro_theme', newTheme);
+  document.getElementById('themeLabel').textContent = newTheme === 'light' ? 'Dark mode' : 'Light mode';
+  toast(newTheme === 'light' ? 'Light mode on' : 'Dark mode on', 'success', 1500);
+}
+
+// Load saved theme
+(function initTheme() {
+  const saved = localStorage.getItem('cutpro_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  setTimeout(() => {
+    const lbl = document.getElementById('themeLabel');
+    if (lbl) lbl.textContent = saved === 'light' ? 'Dark mode' : 'Light mode';
+  }, 50);
+})();
+
+// ============ TOASTS ============
+function toast(msg, type = 'info', duration = 3000) {
+  const container = document.getElementById('toast-container');
+  const icons = {
+    success: '<polyline points="20 6 9 17 4 12"/>',
+    danger: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    warn: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+    info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
+  };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">${icons[type] || icons.info}</svg>
+    <span>${msg}</span>
+  `;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('leaving');
+    setTimeout(() => el.remove(), 250);
+  }, duration);
+}
+
+// ============ AUTO-SAVE INDICATOR ============
+function markUnsaved() {
+  const el = document.getElementById('saveStatus');
+  if (!el) return;
+  el.classList.remove('saved');
+  el.querySelector('span').textContent = 'Saving...';
+}
+
+function markSaved() {
+  const el = document.getElementById('saveStatus');
+  if (!el) return;
+  el.classList.add('saved');
+  el.querySelector('span').textContent = 'Saved';
+}
+
+// ============ UNDO / REDO ============
+function pushUndo() {
+  undoStack.push(JSON.stringify(parts));
+  if (undoStack.length > 50) undoStack.shift();
+  redoStack = [];
+  markUnsaved();
+  setTimeout(markSaved, 400);
+}
+
+function undo() {
+  if (undoStack.length === 0) { toast('Nothing to undo', 'info', 1500); return; }
+  redoStack.push(JSON.stringify(parts));
+  parts = JSON.parse(undoStack.pop());
+  renderParts();
+  updateStats();
+  toast('Undo', 'info', 1000);
+}
+
+function redo() {
+  if (redoStack.length === 0) { toast('Nothing to redo', 'info', 1500); return; }
+  undoStack.push(JSON.stringify(parts));
+  parts = JSON.parse(redoStack.pop());
+  renderParts();
+  updateStats();
+  toast('Redo', 'info', 1000);
+}
+
+
+/* ============================================
+   SKETCHUP PARTS — AUTO-REFRESH POLLING
+============================================ */
+let lastPartCount = 0;
+let pollInterval = null;
+
+async function pollSketchUpParts() {
+  // Skip if not signed in
+  if (!authToken || isDemoMode) return;
+  // Skip if the browser tab is hidden (saves bandwidth)
+  if (document.hidden) return;
+
+  try {
+    const res = await fetch(API_URL + '/latest-sketchup-parts');
+    const data = await res.json();
+
+    if (data.success && data.has_parts && data.parts.length > 0) {
+      const currentCount = parts.reduce((sum, p) => sum + p.qty, 0);
+      const newCount = data.parts.reduce((sum, p) => sum + (p.qty || 1), 0);
+
+      // Only reload if the total qty changed
+      if (newCount !== lastPartCount && newCount !== currentCount) {
+        console.log('🔄 New parts detected from SketchUp — refreshing');
+        lastPartCount = newCount;
+        await autoLoadSketchUpParts();
+        toast(`New parts synced from SketchUp (${newCount})`, 'success', 3000);
+      }
+    }
+  } catch (err) {
+    // Silent fail — no toast spam
+  }
+}
+
+function startPolling() {
+  if (pollInterval) clearInterval(pollInterval);
+  pollInterval = setInterval(pollSketchUpParts, 10000); // every 10s
+  console.log('🔄 Auto-refresh polling started (every 10s)');
+}
+
+function stopPolling() {
+  if (pollInterval) {
+    clearInterval(pollInterval);
+    pollInterval = null;
+    console.log('⏹️ Auto-refresh polling stopped');
+  }
+}
+
+/* ============================================
+   SKETCHUP PARTS — AUTO LOAD
+============================================ */
+async function autoLoadSketchUpParts() {
+  console.log('🔄 Checking for SketchUp parts...');
+  try {
+    const res = await fetch(API_URL + '/latest-sketchup-parts');
+    const data = await res.json();
+
+    if (data.success && data.has_parts && data.parts.length > 0) {
+      console.log('✅ Found', data.parts.length, 'parts from SketchUp');
+
+      parts = [];
+      partIdCounter = 0;
+
+      data.parts.forEach(p => {
+        parts.push({
+          id: ++partIdCounter,
+          width: p.width / 10,      // mm → cm
+          length: p.height / 10,
+          qty: p.qty || 1,
+          material: p.material || 'MDF',
+          label: p.label || 'Part',
+          veneer_edge_count: p.veneer_edges || 0,
+          veneer_length_mm: p.veneer_length_mm || 0,
+          has_veneer: p.has_veneer || false
+        });
+      });
+
+      renderParts();
+      updateStats();
+      savePartsToStorage();
+
+      const veneerCount = parts.filter(p => p.has_veneer).length;
+      toast(`Loaded ${parts.length} parts from SketchUp (${veneerCount} veneer)`, 'success', 4000);
+
+      // Switch to Parts tab to show them
+      switchSection('parts');
+    } else {
+      console.log('ℹ️ No SketchUp parts available');
+    }
+  } catch (err) {
+    console.log('⚠️ Could not fetch SketchUp parts:', err.message);
+  }
+}
+
+// ============ LANDING / DEMO ============
+function openDemo() {
+  isDemoMode = true;
+  document.getElementById('landingPage').classList.add('hidden');
+  document.getElementById('appShell').classList.remove('hidden');
+  document.getElementById('userName').textContent = 'Demo User';
+  document.getElementById('userEmail').textContent = 'demo mode';
+  document.getElementById('userAvatar').textContent = 'D';
+  loadSample();
+  toast('Demo mode — sign up to save your work', 'info', 4000);
+  switchSection('parts');
+  // Check for SketchUp parts
+  setTimeout(autoLoadSketchUpParts, 800);
+}
+
+function scrollToDownload() {
+  document.getElementById('downloadSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function downloadCutPro() {
+  const link = document.createElement('a');
+  link.href = API_URL + '/download-cutpro';
+  link.download = 'CutProSetup_v4.0.exe';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  toast('Download starting...', 'success');
+}
+
+// ============ AUTH ============
+let authMode = 'login';
+
+function openLogin() {
+  authMode = 'login';
+  document.getElementById('authTitle').textContent = 'Sign in';
+  document.getElementById('authSubmit').textContent = 'Sign in';
+  document.getElementById('authSwitchText').textContent = "Don't have an account?";
+  document.getElementById('emailField').style.display = 'none';
+  document.getElementById('authMessage').textContent = '';
+  document.getElementById('authModal').classList.add('show');
+  setTimeout(() => document.getElementById('authUsername').focus(), 100);
+}
+
+function openSignup() {
+  authMode = 'signup';
+  document.getElementById('authTitle').textContent = 'Create account';
+  document.getElementById('authSubmit').textContent = 'Create account';
+  document.getElementById('authSwitchText').textContent = 'Already have an account?';
+  document.getElementById('emailField').style.display = 'block';
+  document.getElementById('authMessage').textContent = '';
+  document.getElementById('authModal').classList.add('show');
+  setTimeout(() => document.getElementById('authUsername').focus(), 100);
+}
+
+function toggleAuthMode(e) {
+  e.preventDefault();
+  if (authMode === 'login') openSignup(); else openLogin();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+async function submitAuth() {
+  const username = document.getElementById('authUsername').value.trim();
+  const password = document.getElementById('authPassword').value.trim();
+  const email = document.getElementById('authEmail').value.trim();
+  const msg = document.getElementById('authMessage');
+  const btn = document.getElementById('authSubmit');
+
+  if (!username || !password) { msg.textContent = 'Please fill in all fields'; return; }
+  if (password.length < 6) { msg.textContent = 'Password must be 6+ characters'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Please wait...';
+  msg.textContent = '';
+
+  try {
+    const endpoint = authMode === 'login' ? '/auth/login' : '/auth/signup';
+    const body = authMode === 'login' 
+      ? { username, password } 
+      : { username, password, email };
+
+    const res = await fetch(API_URL + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      msg.textContent = data.error;
+      btn.disabled = false;
+      btn.textContent = authMode === 'login' ? 'Sign in' : 'Create account';
+      return;
+    }
+
+    authToken = data.token;
+    currentUser = data.username;
+    localStorage.setItem('cutpro_token', authToken);
+    localStorage.setItem('cutpro_user', currentUser);
+
+    closeModal('authModal');
+    enterApp();
+    toast(`Welcome, ${currentUser}!`, 'success');
+  } catch (err) {
+    msg.textContent = 'Connection failed. Try again.';
+    btn.disabled = false;
+    btn.textContent = authMode === 'login' ? 'Sign in' : 'Create account';
+  }
+}
+
+function enterApp() {
+  isDemoMode = false;
+  document.getElementById('landingPage').classList.add('hidden');
+  document.getElementById('appShell').classList.remove('hidden');
+  document.getElementById('userName').textContent = currentUser;
+  document.getElementById('userEmail').textContent = 'signed in';
+  document.getElementById('userAvatar').textContent = currentUser[0].toUpperCase();
+  loadPartsFromStorage();
+  checkServerStatus();
+  toast('Connected to CutPro cloud', 'success', 2000);
+  startPolling();          // ← ADD THIS LINE
+}
+
+function toggleUserMenu() {
+  if (!currentUser) return;
+  if (confirm(`Sign out ${currentUser}?`)) {
+    stopPolling();          // ← ADD THIS LINE
+    localStorage.removeItem('cutpro_token');
+    localStorage.removeItem('cutpro_user');
+    authToken = null;
+    currentUser = null;
+    location.reload();
+  }
+}
+
+// ============ NAVIGATION ============
+function switchSection(name) {
+  document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
+  const target = document.getElementById('section-' + name);
+  if (target) target.classList.remove('hidden');
+
+  document.querySelectorAll('.nav-item[data-section]').forEach(el => {
+    el.classList.toggle('active', el.dataset.section === name);
+  });
+
+  const titles = { dashboard: 'Dashboard', parts: 'Parts', veneer: 'Veneer', history: 'History' };
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+}
+  if (name === 'history') loadHistory();
+
+document.querySelectorAll('.nav-item[data-section]').forEach(el => {
+  el.addEventListener('click', () => switchSection(el.dataset.section));
+});
+
+// ============ STORAGE ============
+function savePartsToStorage() {
+  try {
+    localStorage.setItem('cutpro_parts', JSON.stringify(parts));
+    localStorage.setItem('cutpro_partId', String(partIdCounter));
+  } catch (e) {}
+}
+
+function loadPartsFromStorage() {
+  try {
+    const saved = localStorage.getItem('cutpro_parts');
+    if (saved) {
+      parts = JSON.parse(saved);
+      partIdCounter = parseInt(localStorage.getItem('cutpro_partId') || '0');
+      renderParts();
+      updateStats();
+    }
+  } catch (e) {}
+}
+
+// ============ PARTS CRUD ============
+function addPart(w, l, qty, material, label) {
+  pushUndo();
+  w = w || 60;
+  l = l || 40;
+  qty = qty || 1;
+  material = material || 'MDF';
+  label = label || 'Part';
+
+  const existing = parts.find(p => 
+    Math.round(p.width) === Math.round(w) &&
+    Math.round(p.length) === Math.round(l) &&
+    p.material === material &&
+    p.label === label
+  );
+
+  if (existing) {
+    existing.qty += qty;
+    toast(`Quantity merged — ${label} now x${existing.qty}`, 'success', 2000);
+  } else {
+    parts.push({
+      id: ++partIdCounter,
+      width: w,
+      length: l,
+      qty: qty,
+      material: material,
+      label: label
+    });
+  }
+  renderParts();
+  updateStats();
+  savePartsToStorage();
+}
+
+function removePart(id) {
+  pushUndo();
+  parts = parts.filter(p => p.id !== id);
+  renderParts();
+  updateStats();
+  savePartsToStorage();
+}
+
+function clearAllParts() {
+  if (parts.length === 0) return;
+  if (!confirm('Delete all parts?')) return;
+  pushUndo();
+  parts = [];
+  partIdCounter = 0;
+  renderParts();
+  updateStats();
+  savePartsToStorage();
+  toast('All parts cleared', 'info');
+}
+
+function mergeDuplicates() {
+  if (parts.length === 0) { toast('No parts to merge', 'warn', 1500); return; }
+  pushUndo();
+  const merged = {};
+  parts.forEach(p => {
+    const key = `${Math.round(p.width)}_${Math.round(p.length)}_${p.material}_${p.label}`;
+    if (merged[key]) {
+      merged[key].qty += p.qty;
+    } else {
+      merged[key] = JSON.parse(JSON.stringify(p));
+    }
+  });
+  const before = parts.length;
+  parts = Object.values(merged).map(p => { p.id = ++partIdCounter; return p; });
+  const removed = before - parts.length;
+  renderParts();
+  updateStats();
+  savePartsToStorage();
+  if (removed > 0) toast(`Merged ${removed} duplicate row(s)`, 'success');
+  else toast('No duplicates found', 'info', 1500);
+}
+
+function quickAdd() {
+  const input = document.getElementById('quickAddInput');
+  const val = input.value.trim();
+  if (!val) return;
+
+  // Parse "60x40x4 oak" or "60 40 4 oak"
+  const parts_ = val.split(/\s+/);
+  const dims = parts_[0].split(/[x×*]/i);
+  const w = parseFloat(dims[0]) || 60;
+  const l = parseFloat(dims[1]) || 40;
+  const qty = parseInt(dims[2]) || 1;
+  const material = parts_[1] ? (parts_[1].toLowerCase().includes('oak') ? 'Oak' : 'MDF') : 'MDF';
+
+  addPart(w, l, qty, material, 'Part');
+  input.value = '';
+  toast(`Added ${w}×${l} ×${qty} ${material}`, 'success', 2000);
+}
+
+/* ============================================
+   EDGE PREVIEW — visual mini-square
+============================================ */
+function buildEdgePreviewSVG(p) {
+  const bands = p.edge_bands || {};
+  const marked = {
+    top: bands.top && bands.top !== 'none',
+    left: bands.left && bands.left !== 'none',
+    bottom: bands.bottom && bands.bottom !== 'none',
+    right: bands.right && bands.right !== 'none'
+  };
+
+  // Color for marked edges
+  const stroke = 'var(--accent)';
+  const dash = 'var(--border-strong)';
+
+  // Top / bottom = width (horizontal), left / right = length (vertical)
+  // Make it proportional — if part is wider than tall, square shows that
+  const aspect = p.width / p.length;
+  let w = 16, h = 16;
+  if (aspect > 1.4) { w = 18; h = 12; }
+  else if (aspect < 0.7) { w = 12; h = 18; }
+
+  const x = (20 - w) / 2;
+  const y = (20 - h) / 2;
+
+  return `
+    <svg viewBox="0 0 20 20" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+      <!-- Inner rectangle (the part) -->
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1"
+            fill="none"
+            stroke="var(--border-strong)"
+            stroke-width="1"
+            stroke-dasharray="2 2"/>
+
+      <!-- Top edge -->
+      <line x1="${x}" y1="${y}" x2="${x + w}" y2="${y}"
+            stroke="${marked.top ? stroke : 'transparent'}"
+            stroke-width="${marked.top ? '2.5' : '0'}"
+            stroke-linecap="round"/>
+
+      <!-- Bottom edge -->
+      <line x1="${x}" y1="${y + h}" x2="${x + w}" y2="${y + h}"
+            stroke="${marked.bottom ? stroke : 'transparent'}"
+            stroke-width="${marked.bottom ? '2.5' : '0'}"
+            stroke-linecap="round"/>
+
+      <!-- Left edge -->
+      <line x1="${x}" y1="${y}" x2="${x}" y2="${y + h}"
+            stroke="${marked.left ? stroke : 'transparent'}"
+            stroke-width="${marked.left ? '2.5' : '0'}"
+            stroke-linecap="round"/>
+
+      <!-- Right edge -->
+      <line x1="${x + w}" y1="${y}" x2="${x + w}" y2="${y + h}"
+            stroke="${marked.right ? stroke : 'transparent'}"
+            stroke-width="${marked.right ? '2.5' : '0'}"
+            stroke-linecap="round"/>
+    </svg>
+  `;
+}
+
+
+
+/* ============================================
+   HISTORY
+============================================ */
+async function loadHistory() {
+  const body = document.getElementById('historyBody');
+  if (!authToken) {
+    body.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <h3>Sign in to view history</h3>
+        <p>Your projects are saved to your account.</p>
+        <button class="btn btn-primary btn-sm" onclick="openLogin()">Sign in</button>
+      </div>
+    `;
+    return;
+  }
+
+  // Show loading skeleton
+  body.innerHTML = `
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      ${[1, 2, 3].map(() => `
+        <div class="skeleton" style="height: 72px; border-radius: 10px;"></div>
+      `).join('')}
+    </div>
+  `;
+
+  try {
+    const res = await fetch(API_URL + '/history', {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      body.innerHTML = `<div class="empty-state"><h3>Error</h3><p>${data.error}</p></div>`;
+      return;
+    }
+
+    const history = data.history || [];
+
+    if (history.length === 0) {
+      body.innerHTML = `
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <h3>No saved projects yet</h3>
+          <p>Run a cut optimization and it'll be saved here automatically.</p>
+        </div>
+      `;
+      return;
+    }
+
+    body.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        ${history.map(h => renderHistoryItem(h)).join('')}
+      </div>
+    `;
+  } catch (err) {
+    body.innerHTML = `<div class="empty-state"><h3>Connection failed</h3><p>${err.message}</p></div>`;
+  }
+}
+
+function renderHistoryItem(h) {
+  const projectName = (h.settings && h.settings.projectName) || 'Untitled project';
+  const totalParts = h.total_parts || 0;
+  const sheetsNeeded = h.sheets_needed || 0;
+  const date = h.date || h.timestamp || '';
+  const id = h.id || '';
+
+  // Count parts for display
+  const partsPreview = (h.parts || []).slice(0, 3).map(p => {
+    const w = Math.round((p.w || p.width || 0) / 10);
+    const l = Math.round((p.h || p.length || 0) / 10);
+    return `<span class="badge" style="font-size:10px;">${w}×${l}</span>`;
+  }).join(' ');
+
+  const moreCount = Math.max(0, (h.parts || []).length - 3);
+
+  return `
+    <div class="card" style="padding: 14px 18px; display: flex; align-items: center; gap: 16px; transition: var(--transition); cursor: pointer;"
+         onmouseover="this.style.borderColor='var(--accent)'"
+         onmouseout="this.style.borderColor='var(--border)'">
+      <div style="flex: 1; min-width: 0;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+          <div style="font-weight: 600; font-size: 14px; color: var(--text);">${escapeHtml(projectName)}</div>
+          <span class="badge accent">${totalParts} parts</span>
+          <span class="badge success">${sheetsNeeded} sheets</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-mute); display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <span>📅 ${date}</span>
+          ${partsPreview ? `<span>${partsPreview}${moreCount > 0 ? ` <span class="text-mute">+${moreCount}</span>` : ''}</span>` : ''}
+        </div>
+      </div>
+      <div style="display: flex; gap: 6px; flex-shrink: 0;">
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); loadHistoryEntry('${id}')">
+          Load
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteHistoryEntry('${id}')">
+          Delete
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+
+async function saveToHistory(data) {
+  if (!authToken) return;
+  if (isDemoMode) {
+    console.log('ℹ️ Skipping save (demo mode)');
+    return;
+  }
+
+  try {
+    const partsData = parts.map(p => ({
+      w: p.width * 10,     // cm → mm
+      h: p.length * 10,
+      qty: p.qty,
+      material: p.material || 'MDF',
+      label: p.label || 'Part',
+      veneer_edge_count: p.veneer_edge_count || 0,
+      veneer_length_mm: p.veneer_length_mm || 0,
+      has_veneer: p.has_veneer || false
+    }));
+
+    await fetch(API_URL + '/history', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + authToken
+      },
+      body: JSON.stringify({
+        parts: partsData,
+        results: data.summary || {},
+        settings: {
+          projectName: currentProjectName || 'Untitled project',
+          sheetWidth: parseFloat(document.getElementById('sheetWidth').value),
+          sheetHeight: parseFloat(document.getElementById('sheetHeight').value),
+          kerf: parseFloat(document.getElementById('kerf').value)
+        }
+      })
+    });
+
+    console.log('✅ History saved');
+  } catch (err) {
+    console.warn('⚠️ Could not save history:', err);
+  }
+}
+
+async function loadHistoryEntry(entryId) {
+  if (!authToken) return;
+
+  try {
+    const res = await fetch(API_URL + '/history', {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await res.json();
+    const entry = (data.history || []).find(h => h.id === entryId);
+
+    if (!entry) { toast('Entry not found', 'danger'); return; }
+
+    // Restore parts
+    parts = [];
+    partIdCounter = 0;
+
+    (entry.parts || []).forEach(p => {
+      const w = (p.w || p.width || 0) / 10;
+      const l = (p.h || p.length || 0) / 10;
+      parts.push({
+        id: ++partIdCounter,
+        width: w,
+        length: l,
+        qty: p.qty || 1,
+        material: p.material || 'MDF',
+        label: p.label || 'Part',
+        veneer_edge_count: p.veneer_edge_count || 0,
+        veneer_length_mm: p.veneer_length_mm || 0,
+        has_veneer: p.has_veneer || false
+      });
+    });
+
+    currentProjectName = (entry.settings && entry.settings.projectName) || 'Loaded project';
+
+    renderParts();
+    updateStats();
+    savePartsToStorage();
+
+    // Switch to Parts section
+    switchSection('parts');
+    toast(`Loaded "${currentProjectName}" — ${parts.length} part rows`, 'success', 3000);
+  } catch (err) {
+    toast('Failed to load: ' + err.message, 'danger');
+  }
+}
+
+async function deleteHistoryEntry(entryId) {
+  if (!confirm('Delete this project?')) return;
+
+  try {
+    const res = await fetch(API_URL + '/history/' + entryId, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await res.json();
+    if (data.success) {
+      toast('Project deleted', 'success');
+      loadHistory();
+    }
+  } catch (err) {
+    toast('Failed: ' + err.message, 'danger');
+  }
+}
+
+async function clearAllHistory() {
+  if (!confirm('Delete ALL saved projects? This cannot be undone.')) return;
+
+  try {
+    const res = await fetch(API_URL + '/history/clear', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await res.json();
+    if (data.success) {
+      toast('All history cleared', 'success');
+      loadHistory();
+    }
+  } catch (err) {
+    toast('Failed: ' + err.message, 'danger');
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[c]);
+}
+
+
+// ============ RENDER ============
+function renderParts() {
+  const tbody = document.getElementById('partsBody');
+  const empty = document.getElementById('partsEmpty');
+  const table = document.getElementById('partsTable');
+
+  if (parts.length === 0) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  table.style.display = 'table';
+  empty.style.display = 'none';
+  tbody.innerHTML = '';
+
+  parts.forEach((p, i) => {
+    const tr = document.createElement('tr');
+    const hasVeneer = p.has_veneer || p.veneer_edge_count > 0;
+    tr.innerHTML = `
+      <td class="text-mute">${i + 1}</td>
+      <td><input type="number" value="${p.width}" onchange="updatePart(${p.id}, 'width', this.value)" step="0.1"></td>
+      <td><input type="number" value="${p.length}" onchange="updatePart(${p.id}, 'length', this.value)" step="0.1"></td>
+      <td><input type="number" value="${p.qty}" onchange="updatePart(${p.id}, 'qty', this.value)" min="1"></td>
+      <td><input type="text" value="${p.material || 'MDF'}" onchange="updatePart(${p.id}, 'material', this.value)"></td>
+      <td><input type="text" value="${p.label || 'Part'}" onchange="updatePart(${p.id}, 'label', this.value)"></td>
+      <td<button class="edge-preview ${hasVeneer ? 'has-veneer' : ''}" title="Edge banding" onclick="openEdgeBand(${p.id})">
+            ${buildEdgePreviewSVG(p)}
+          </button></td>
+      <td><button class="icon-btn danger" title="Remove" onclick="removePart(${p.id})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function updatePart(id, field, value) {
+  const p = parts.find(x => x.id === id);
+  if (!p) return;
+  if (['width', 'length', 'qty'].includes(field)) {
+    p[field] = parseFloat(value) || 0;
+  } else {
+    p[field] = value;
+  }
+  updateStats();
+  savePartsToStorage();
+  markUnsaved();
+  setTimeout(markSaved, 300);
+}
+
+function updateStats() {
+  const totalParts = parts.reduce((s, p) => s + p.qty, 0);
+  const totalArea = parts.reduce((s, p) => s + (p.width * p.length * p.qty), 0) / 10000;
+  document.getElementById('statParts').textContent = totalParts;
+  document.getElementById('statArea').textContent = totalArea.toFixed(2) + ' m²';
+}
+
+// ============ SAMPLE & PRESETS ============
+function loadSample() {
+  pushUndo();
+  parts = [];
+  partIdCounter = 0;
+  addPart(60, 70, 4, 'MDF', 'DOOR');
+  addPart(30, 60, 12, 'MDF', 'DRAWER');
+  addPart(40, 70, 8, 'MDF', 'SHELF');
+  addPart(20, 50, 6, 'Oak', 'PANEL');
+  addPart(18, 40, 4, 'Oak', 'FACE');
+  renderParts();
+  updateStats();
+  savePartsToStorage();
+  toast('Sample parts loaded', 'success');
+}
+
+function setPreset(w, h) {
+  document.getElementById('sheetWidth').value = w;
+  document.getElementById('sheetHeight').value = h;
+  toast(`Sheet size: ${w} × ${h} cm`, 'success', 1500);
+}
+
+// ============ OPTIMIZATION ============
+async function runOptimization() {
+  if (parts.length === 0) { toast('Add parts first', 'warn'); return; }
+  if (!authToken) { openLogin(); return; }
+
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Calculating...'; }
+
+  try {
+    const sheetWidth = parseFloat(document.getElementById('sheetWidth').value) * 10; // cm → mm
+    const sheetHeight = parseFloat(document.getElementById('sheetHeight').value) * 10;
+    const kerf = parseFloat(document.getElementById('kerf').value);
+
+    const partsData = parts.map(p => ({
+      length: p.width * 10,   // backend expects mm
+      width: p.length * 10,
+      qty: p.qty,
+      material: p.material || 'MDF',
+      label: p.label || 'Part',
+      veneer_edge_count: p.veneer_edge_count || 0,
+      veneer_length_mm: p.veneer_length_mm || 0,
+      has_veneer: p.has_veneer || false
+    }));
+
+    const res = await fetch(API_URL + '/optimize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parts: partsData, sheetWidth, sheetHeight, kerf, priority: 'area' })
+    });
+    const data = await res.json();
+
+    if (data.error) { toast('Error: ' + data.error, 'danger'); return; }
+
+    lastOptimizationData = data;
+    window.lastOptimizationData = data;
+    displayResults(data);
+    toast(`Optimized! ${data.summary.total_sheets} sheets needed`, 'success');
+
+    // Save to history
+    saveToHistory(data);
+  } catch (err) {
+    toast('Connection failed: ' + err.message, 'danger');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Calculate'; }
+  }
+}
+
+function displayResults(data) {
+  const container = document.getElementById('resultsContent');
+  const summary = data.summary || {};
+  const totalSheets = summary.total_sheets || 0;
+  const efficiency = summary.total_waste !== undefined && summary.total_area > 0
+    ? ((summary.total_area / (summary.total_area + summary.total_waste)) * 100)
+    : 0;
+
+  container.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <h2>Optimization Result</h2>
+        <div class="card-actions">
+          <span class="badge success">${totalSheets} sheets</span>
+          <button class="btn btn-ghost btn-sm" onclick="printResults()">Print</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="stat-grid mb-4">
+          <div class="stat"><div class="label">Sheets</div><div class="value accent">${totalSheets}</div></div>
+          <div class="stat"><div class="label">Used Area</div><div class="value">${(summary.total_area || 0).toFixed(2)} m²</div></div>
+          <div class="stat"><div class="label">Waste</div><div class="value warn">${(summary.total_waste || 0).toFixed(2)} m²</div></div>
+          <div class="stat"><div class="label">Parts</div><div class="value">${summary.total_parts || 0}</div></div>
+        </div>
+        <div id="cuttingDiagram"></div>
+      </div>
+    </div>
+  `;
+  drawDiagram(data);
+}
+
+function drawDiagram(data) {
+  const container = document.getElementById('cuttingDiagram');
+  const details = data.details || {};
+  const allSheets = [];
+  Object.keys(details).forEach(m => {
+    (details[m].sheets || []).forEach(s => {
+      if (!s.is_scrap_note) allSheets.push({ material: m, sheet: s });
+    });
+  });
+  if (allSheets.length === 0) return;
+
+  const sheetWidth = data.sheet_width || 2440;
+  const sheetHeight = data.sheet_height || 1220;
+
+  allSheets.forEach((item, idx) => {
+    const canvas = document.createElement('canvas');
+    canvas.style.width = '100%';
+    canvas.style.maxWidth = '700px';
+    canvas.style.marginTop = '16px';
+    canvas.style.border = '1px solid var(--border)';
+    canvas.style.borderRadius = '8px';
+    canvas.style.display = 'block';
+    const w = 700;
+    const h = w * (sheetHeight / sheetWidth);
+    canvas.width = w;
+    canvas.height = h;
+    container.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-elev').trim() || '#fff';
+    ctx.fillRect(0, 0, w, h);
+
+    const scaleX = w / sheetWidth;
+    const scaleY = h / sheetHeight;
+
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, w, h);
+
+    const colors = ['#e0f2fe', '#fce7f3', '#fef3c7', '#dcfce7', '#ede9fe', '#ffe4e6', '#dbeafe', '#fef9c3'];
+
+    (item.sheet.parts || []).forEach((p, i) => {
+      const px = (p.x || 0) * scaleX;
+      const py = (p.y || 0) * scaleY;
+      const pw = (p.w || 0) * scaleX;
+      const ph = (p.h || 0) * scaleY;
+
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillRect(px, py, pw, ph);
+      ctx.strokeStyle = '#666';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px, py, pw, ph);
+
+      if (pw > 30 && ph > 14) {
+        ctx.fillStyle = '#111';
+        ctx.font = 'bold 10px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const txt = (p.w / 10).toFixed(0) + '×' + (p.h / 10).toFixed(0);
+        ctx.fillText(txt, px + pw / 2, py + ph / 2);
+      }
+    });
+  });
+}
+
+// ============ VENEER ============
+async function calculateVeneer() {
+  if (parts.length === 0) { toast('Add parts first', 'warn'); return; }
+  if (!authToken) { openLogin(); return; }
+
+  try {
+    const partsData = parts.map(p => ({
+      length: p.width * 10,
+      width: p.length * 10,
+      qty: p.qty,
+      material: p.material || 'MDF',
+      label: p.label || 'Part',
+      veneer_edge_count: p.veneer_edge_count || 0,
+      veneer_length_mm: p.veneer_length_mm || 0,
+      has_veneer: p.has_veneer || false
+    }));
+
+    const res = await fetch(API_URL + '/calculate-veneer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        parts: partsData,
+        wasteFactor: parseFloat(document.getElementById('veneerWaste').value) || 10,
+        edging: document.getElementById('veneerEdging').value === 'yes'
+      })
+    });
+    const data = await res.json();
+    if (data.error) { toast(data.error, 'danger'); return; }
+
+    document.getElementById('veneerResult').innerHTML = `
+      <div class="stat-grid">
+        <div class="stat"><div class="label">Veneer Parts</div><div class="value accent">${data.veneer_parts_count || 0}</div></div>
+        <div class="stat"><div class="label">Non-Veneer</div><div class="value">${data.non_veneer_parts_count || 0}</div></div>
+        <div class="stat"><div class="label">Edge Length</div><div class="value">${(data.total_edge_length || 0).toFixed(2)} m</div></div>
+        <div class="stat"><div class="label">Total Needed</div><div class="value success">${(data.veneer_needed_m || 0).toFixed(2)} m</div></div>
+      </div>
+    `;
+    toast('Veneer calculated', 'success');
+  } catch (err) {
+    toast('Failed: ' + err.message, 'danger');
+  }
+}
+
+// ============ EDGE BAND (simple prompt version) ============
+/* ============================================
+   EDGE BANDING MODAL
+============================================ */
+let currentEdgeBandPartId = null;
+
+function openEdgeBand(id) {
+  const p = parts.find(x => x.id === id);
+  if (!p) return;
+
+  currentEdgeBandPartId = id;
+
+  document.getElementById('edgeBandPartLabel').textContent = p.label || 'Part';
+  document.getElementById('edgeBandPartSize').textContent = `${p.width} × ${p.length} cm`;
+
+  // Restore saved values or default to none
+  const bands = p.edge_bands || { top: 'none', left: 'none', bottom: 'none', right: 'none' };
+
+  const sides = [
+    { key: 'top', label: 'Top', length: p.width, icon: 'arrow-up' },
+    { key: 'left', label: 'Left', length: p.length, icon: 'arrow-left' },
+    { key: 'bottom', label: 'Bottom', length: p.width, icon: 'arrow-down' },
+    { key: 'right', label: 'Right', length: p.length, icon: 'arrow-right' }
+  ];
+
+  const grid = document.getElementById('edgeBandGrid');
+  grid.innerHTML = sides.map(s => `
+    <div class="edge-band-row ${bands[s.key] !== 'none' ? 'active' : ''}" data-side="${s.key}">
+      <div class="edge-band-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          ${getArrowIcon(s.icon)}
+        </svg>
+      </div>
+      <div class="edge-band-info">
+        <div class="label">${s.label} edge</div>
+        <div class="length">${s.length.toFixed(1)} cm</div>
+      </div>
+      <select class="edge-band-select" data-side="${s.key}" onchange="onEdgeBandChange(this)">
+        <option value="none" ${bands[s.key] === 'none' ? 'selected' : ''}>None</option>
+        <option value="Edge band 1" ${bands[s.key] === 'Edge band 1' ? 'selected' : ''}>Edge band 1</option>
+        <option value="Edge band 2" ${bands[s.key] === 'Edge band 2' ? 'selected' : ''}>Edge band 2</option>
+        <option value="Edge band 3" ${bands[s.key] === 'Edge band 3' ? 'selected' : ''}>Edge band 3</option>
+      </select>
+    </div>
+  `).join('');
+
+  updateEdgeBandTotals();
+  document.getElementById('edgeBandModal').classList.add('show');
+}
+
+function getArrowIcon(name) {
+  const icons = {
+    'arrow-up': '<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>',
+    'arrow-down': '<line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>',
+    'arrow-left': '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+    'arrow-right': '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>'
+  };
+  return icons[name] || icons['arrow-up'];
+}
+
+function onEdgeBandChange(selectEl) {
+  const side = selectEl.dataset.side;
+  const row = selectEl.closest('.edge-band-row');
+  if (selectEl.value !== 'none') row.classList.add('active');
+  else row.classList.remove('active');
+  updateEdgeBandTotals();
+}
+
+function updateEdgeBandTotals() {
+  const p = parts.find(x => x.id === currentEdgeBandPartId);
+  if (!p) return;
+
+  const selects = document.querySelectorAll('#edgeBandGrid .edge-band-select');
+  let total = 0;
+  let count = 0;
+
+  selects.forEach(sel => {
+    if (sel.value !== 'none') {
+      count++;
+      if (sel.dataset.side === 'top' || sel.dataset.side === 'bottom') total += p.width;
+      else total += p.length;
+    }
+  });
+
+  document.getElementById('edgeBandTotal').textContent = total.toFixed(1) + ' cm';
+  document.getElementById('edgeBandCount').textContent = count;
+}
+
+function selectAllEdgeBands() {
+  document.querySelectorAll('#edgeBandGrid .edge-band-select').forEach(sel => {
+    sel.value = 'Edge band 1';
+    sel.closest('.edge-band-row').classList.add('active');
+  });
+  updateEdgeBandTotals();
+}
+
+function clearEdgeBands() {
+  document.querySelectorAll('#edgeBandGrid .edge-band-select').forEach(sel => {
+    sel.value = 'none';
+    sel.closest('.edge-band-row').classList.remove('active');
+  });
+  updateEdgeBandTotals();
+}
+
+function closeEdgeBandModal() {
+  document.getElementById('edgeBandModal').classList.remove('show');
+  currentEdgeBandPartId = null;
+}
+
+function saveEdgeBands() {
+  const p = parts.find(x => x.id === currentEdgeBandPartId);
+  if (!p) { closeEdgeBandModal(); return; }
+
+  const bands = { top: 'none', left: 'none', bottom: 'none', right: 'none' };
+  document.querySelectorAll('#edgeBandGrid .edge-band-select').forEach(sel => {
+    bands[sel.dataset.side] = sel.value;
+  });
+
+  p.edge_bands = bands;
+
+  // Compute totals
+  let edgeCount = 0;
+  let totalMm = 0;
+  if (bands.top !== 'none') { edgeCount++; totalMm += p.width * 10; }
+  if (bands.bottom !== 'none') { edgeCount++; totalMm += p.width * 10; }
+  if (bands.left !== 'none') { edgeCount++; totalMm += p.length * 10; }
+  if (bands.right !== 'none') { edgeCount++; totalMm += p.length * 10; }
+
+  p.veneer_edge_count = edgeCount;
+  p.veneer_length_mm = totalMm;
+  p.has_veneer = edgeCount > 0;
+
+  pushUndo();
+  renderParts();
+  savePartsToStorage();
+  closeEdgeBandModal();
+
+  if (edgeCount > 0) {
+    toast(`Veneer set: ${edgeCount} edge(s), ${(totalMm / 10).toFixed(1)} cm total`, 'success', 3000);
+  } else {
+    toast('Veneer removed', 'info', 1500);
+  }
+}
+
+// Close modal when clicking outside
+document.getElementById('edgeBandModal')?.addEventListener('click', e => {
+  if (e.target.id === 'edgeBandModal') closeEdgeBandModal();
+});
+
+// ============ SERVER STATUS ============
+async function checkServerStatus() {
+  try {
+    const res = await fetch(API_URL + '/status');
+    const data = await res.json();
+    console.log('✅ Server online:', data);
+  } catch (err) {
+    console.warn('⚠️ Server offline');
+    toast('Cloud server unreachable', 'warn', 3000);
+  }
+}
+
+// ============ PRINT ============
+/* ============================================
+   PRINT — A4 LAYOUT, ONE SHEET PER PAGE
+============================================ */
+function printResults() {
+  if (!window.lastOptimizationData) {
+    toast('Run Calculate first before printing', 'warn', 3000);
+    return;
+  }
+
+  const data = window.lastOptimizationData;
+  const details = data.details || {};
+
+  // Collect all sheets (skip scrap notes)
+  const allSheets = [];
+  Object.keys(details).forEach(materialKey => {
+    const md = details[materialKey];
+    if (md && Array.isArray(md.sheets)) {
+      md.sheets.forEach(sheet => {
+        if (sheet && !sheet.is_scrap_note) {
+          allSheets.push({ material: materialKey, sheet });
+        }
+      });
+    }
+  });
+
+  if (allSheets.length === 0) {
+    toast('No sheets to print', 'warn', 3000);
+    return;
+  }
+
+  const printDiv = document.getElementById('printContainer');
+  printDiv.innerHTML = '';
+
+  allSheets.forEach((item, idx) => {
+    const sheet = item.sheet;
+    const sWidth = sheet.sheet_width || 2440;
+    const sHeight = sheet.sheet_height || 1220;
+    const partsOnSheet = sheet.parts || [];
+    const usedArea = sheet.used_area || 0;
+    const wasteArea = sheet.waste_area || 0;
+
+    // Per-sheet panel groups
+    const perSheetPanels = {};
+    partsOnSheet.forEach(p => {
+      const key = Math.round(p.w / 10) + '×' + Math.round(p.h / 10) + '|' + (p.label || 'PART');
+      if (!perSheetPanels[key]) {
+        perSheetPanels[key] = {
+          size: Math.round(p.w / 10) + '×' + Math.round(p.h / 10),
+          label: p.label || 'PART',
+          qty: 0
+        };
+      }
+      perSheetPanels[key].qty += 1;
+    });
+
+    let html = '<div class="print-sheet">';
+
+    // Header
+    html += '<div class="print-sheet-header">';
+    html += 'SHEET ' + (idx + 1) + ' / ' + allSheets.length;
+    html += ' &nbsp;·&nbsp; ' + (sWidth / 10).toFixed(0) + ' × ' + (sHeight / 10).toFixed(0) + ' cm';
+    html += ' &nbsp;·&nbsp; ' + item.material;
+    html += '</div>';
+
+    // Bottom section
+    html += '<div class="print-bottom">';
+
+    // Left column
+    html += '<div class="print-left-col">';
+
+    html += '<div class="plc-block">';
+    html += '<div class="plc-title">Stock sheet ' + (sWidth / 10).toFixed(0) + '×' + (sHeight / 10).toFixed(0) + '</div>';
+    html += '<div class="plc-row"><span>Used area</span><span>' + (usedArea / 1000000).toFixed(4) + ' m²</span></div>';
+    html += '<div class="plc-row"><span>Wasted area</span><span>' + (wasteArea / 1000000).toFixed(4) + ' m²</span></div>';
+    html += '<div class="plc-row"><span>Panels</span><span>' + partsOnSheet.length + '</span></div>';
+    html += '<div class="plc-row"><span>Efficiency</span><span>' + (usedArea / (sWidth * sHeight) * 100).toFixed(1) + '%</span></div>';
+    html += '</div>';
+
+    // Panel table
+    html += '<div class="plc-block">';
+    html += '<div class="plc-title">Panel · Label · Qty</div>';
+    html += '<table class="plc-table">';
+    Object.keys(perSheetPanels).forEach(k => {
+      const g = perSheetPanels[k];
+      html += '<tr><td>' + g.size + '</td><td>' + g.label + '</td><td style="text-align:right;">' + g.qty + '</td></tr>';
+    });
+    html += '</table>';
+    html += '</div>';
+
+    // Numbered list
+    html += '<div class="plc-block">';
+    html += '<div class="plc-title"># · Panel · Cut</div>';
+    html += '<table class="plc-table">';
+    partsOnSheet.forEach((p, i) => {
+      const w = Math.round(p.w / 10);
+      const h = Math.round(p.h / 10);
+      html += '<tr>';
+      html += '<td>' + (i + 1) + '.</td>';
+      html += '<td>' + w + '×' + h + '</td>';
+      html += '<td>' + (p.label ? p.label.substring(0, 8) : '—') + '</td>';
+      html += '</tr>';
+    });
+    html += '</table>';
+    html += '</div>';
+
+    html += '</div>'; // end print-left-col
+
+    // Right column — canvas
+    html += '<div class="print-right-col">';
+    html += '<canvas id="printCanvas_' + idx + '"></canvas>';
+    html += '</div>';
+
+    html += '</div>'; // end print-bottom
+    html += '</div>'; // end print-sheet
+
+    printDiv.innerHTML += html;
+  });
+
+  // Draw each sheet
+  allSheets.forEach((item, idx) => {
+    drawSheetForPrint(item.sheet, 'printCanvas_' + idx);
+  });
+
+  toast('Opening print preview...', 'info', 1500);
+  setTimeout(() => window.print(), 400);
+}
+
+/* ============================================
+   DRAW ONE SHEET FOR PRINT
+============================================ */
+/* ============================================
+   DRAW ONE SHEET FOR PRINT — ROTATED VERTICAL
+============================================ */
+function drawSheetForPrint(sheet, canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const sWidth = sheet.sheet_width || 2440;
+  const sHeight = sheet.sheet_height || 1220;
+
+  // Rotate 90° clockwise → new drawing is portrait
+  // (sHeight becomes horizontal, sWidth becomes vertical)
+  const rotatedW = sHeight;
+  const rotatedH = sWidth;
+
+  // Fit to A4 portrait print area
+  const maxW = 640;
+  const maxH = 950;
+  const aspect = rotatedW / rotatedH;
+  let w = maxW;
+  let h = w / aspect;
+  if (h > maxH) { h = maxH; w = h * aspect; }
+
+  canvas.width = Math.round(w);
+  canvas.height = Math.round(h);
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+
+  const ctx = canvas.getContext('2d');
+  const padding = 4;
+  const drawW = canvas.width - padding * 2;
+  const drawH = canvas.height - padding * 2;
+  const x = padding;
+  const y = padding;
+
+  const scaleX = drawW / rotatedW;
+  const scaleY = drawH / rotatedH;
+
+  // White bg
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Sheet border
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x, y, drawW, drawH);
+
+  const partColors = [
+    '#FDEFF2', '#F0F8FF', '#F5F0FA', '#F0FBF0', '#FFF5EC',
+    '#EEF6FB', '#FDF3F2', '#EAF5F8', '#FBF7EC', '#F5EEF7',
+    '#FFEEEE', '#EEFFEE', '#EEEEFF', '#FFFFEE', '#FFEEFF', '#EEFFFF'
+  ];
+
+  const parts = sheet.parts || [];
+  parts.forEach((part, i) => {
+    // Original position
+    const origX = parseFloat(part.x) || 0;
+    const origY = parseFloat(part.y) || 0;
+    const origW = parseFloat(part.w) || 0;
+    const origH = parseFloat(part.h) || 0;
+
+    // Rotate 90° clockwise:
+    // New (x, y) = (sHeight - origY - origH, origX)
+    // New size   = (origH, origW)
+    const newX = sHeight - (origY + origH);
+    const newY = origX;
+    const newW = origH;
+    const newH = origW;
+
+    const px = x + newX * scaleX;
+    const py = y + newY * scaleY;
+    const pw = newW * scaleX;
+    const ph = newH * scaleY;
+
+    if (pw < 2 || ph < 2) return;
+
+    // Fill
+    ctx.fillStyle = partColors[i % partColors.length];
+    ctx.fillRect(px, py, pw, ph);
+
+    // Border
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+    ctx.strokeRect(px, py, pw, ph);
+
+    // Veneer dashed border
+    const hasVeneer = part.has_veneer || (part.veneer_edge_count && part.veneer_edge_count > 0);
+    if (hasVeneer) {
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.strokeRect(px + 3, py + 3, pw - 6, ph - 6);
+      ctx.setLineDash([]);
+    }
+
+    // Smart text — rotate if part is now tall/narrow
+    if (pw > 12 && ph > 8) {
+      const label = (part.label || 'PART').toUpperCase();
+      const dimText = (part.w / 10).toFixed(1) + '×' + (part.h / 10).toFixed(1);
+      const rotateText = (ph > pw * 1.6);
+
+      ctx.save();
+      ctx.translate(px + pw / 2, py + ph / 2);
+      if (rotateText) ctx.rotate(-Math.PI / 2);
+
+      const availW = rotateText ? ph : pw;
+      const availH = rotateText ? pw : ph;
+
+      let fontSize = 13;
+      let drawn = false;
+      while (fontSize > 4) {
+        ctx.font = 'bold ' + fontSize + 'px Arial';
+        const oneLine = label + ' ' + dimText;
+        if (ctx.measureText(oneLine).width <= availW - 4 && fontSize * 1.4 <= availH - 4) {
+          ctx.fillStyle = '#111';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(oneLine, 0, 0);
+          drawn = true;
+          break;
+        }
+        fontSize -= 1;
+      }
+      if (!drawn) {
+        ctx.font = 'bold 4px Arial';
+        ctx.fillStyle = '#111';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(dimText, 0, 0);
+      }
+      ctx.restore();
+    }
+  });
+}
+
+// ============ COMMAND PALETTE ============
+const cmdkCommands = [
+  { icon: '🕒', label: 'Refresh History', action: loadHistory, kbd: '' },
+  { icon: '⏸️', label: 'Pause/Resume Live Sync', action: () => {
+    if (pollInterval) { stopPolling(); toast('Live sync paused', 'info'); }
+    else { startPolling(); toast('Live sync resumed', 'success'); }
+  }, kbd: '⌘`' },
+  { icon: '🔄', label: 'Sync from SketchUp', action: autoLoadSketchUpParts, kbd: '⌘⇧R' },
+  { icon: '⚡', label: 'Calculate Cut List', action: runOptimization, kbd: '⌘↵' },
+  { icon: '📋', label: 'Add Part', action: () => addPart(), kbd: '' },
+  { icon: '📁', label: 'Load Sample Parts', action: loadSample, kbd: '' },
+  { icon: '🔗', label: 'Merge Duplicates', action: mergeDuplicates, kbd: '' },
+  { icon: '🖨️', label: 'Print Results', action: printResults, kbd: '⌘P' },
+  { icon: '↩️', label: 'Undo', action: undo, kbd: '⌘Z' },
+  { icon: '↪️', label: 'Redo', action: redo, kbd: '⌘Y' },
+  { icon: '🌓', label: 'Toggle Theme', action: toggleTheme, kbd: '' },
+  { icon: '📊', label: 'Go to Dashboard', action: () => switchSection('dashboard'), kbd: '1' },
+  { icon: '📝', label: 'Go to Parts', action: () => switchSection('parts'), kbd: '2' },
+  { icon: '🎨', label: 'Go to Veneer', action: () => switchSection('veneer'), kbd: '3' },
+  { icon: '🕒', label: 'Go to History', action: () => switchSection('history'), kbd: '4' },
+  { icon: '🚪', label: 'Sign Out', action: toggleUserMenu, kbd: '' },
+];
+
+function openCmdk() {
+  document.getElementById('cmdk').classList.add('show');
+  document.getElementById('cmdkInput').value = '';
+  renderCmdk('');
+  setTimeout(() => document.getElementById('cmdkInput').focus(), 50);
+}
+
+function closeCmdk() {
+  document.getElementById('cmdk').classList.remove('show');
+}
+
+function renderCmdk(query) {
+  const list = document.getElementById('cmdkList');
+  const q = query.toLowerCase();
+  const filtered = cmdkCommands.filter(c => c.label.toLowerCase().includes(q));
+  list.innerHTML = filtered.map((c, i) => `
+    <div class="cmdk-item ${i === 0 ? 'active' : ''}" onclick="execCmdk(${cmdkCommands.indexOf(c)})">
+      <span>${c.icon}</span>
+      <span>${c.label}</span>
+      ${c.kbd ? `<span class="kbd">${c.kbd}</span>` : ''}
+    </div>
+  `).join('') || '<div style="padding: 20px; text-align: center; color: var(--text-mute);">No commands</div>';
+}
+
+function execCmdk(idx) {
+  closeCmdk();
+  const cmd = cmdkCommands[idx];
+  if (cmd && cmd.action) setTimeout(cmd.action, 100);
+}
+
+document.getElementById('cmdkInput')?.addEventListener('input', e => renderCmdk(e.target.value));
+
+// ============ KEYBOARD SHORTCUTS ============
+document.addEventListener('keydown', e => {
+  const mod = e.ctrlKey || e.metaKey;
+
+  if (mod && e.shiftKey && e.key === 'R') { e.preventDefault(); autoLoadSketchUpParts(); return; }
+  if (mod && e.key === 'k') { e.preventDefault(); openCmdk(); return; }
+  if (mod && e.key === 'Enter') { e.preventDefault(); runOptimization(); return; }
+  if (mod && e.key === 'p') { e.preventDefault(); printResults(); return; }
+  if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
+  if (mod && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); redo(); return; }
+
+  if (e.key === 'Escape') {
+    closeCmdk();
+    document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+  }
+
+  if (mod && e.key === '`') { 
+    e.preventDefault(); 
+    if (pollInterval) { stopPolling(); toast('Live sync paused', 'info'); }
+    else { startPolling(); toast('Live sync resumed', 'success'); }
+    return; 
+  }
+
+  // Number keys for nav (only when not typing)
+  if (!['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+    if (e.key === '1') switchSection('dashboard');
+    if (e.key === '2') switchSection('parts');
+    if (e.key === '3') switchSection('veneer');
+    if (e.key === '4') switchSection('history');
+  }
+});
+
+// Click outside modals to close
+document.querySelectorAll('.modal').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
+});
+document.getElementById('cmdk').addEventListener('click', e => {
+  if (e.target.id === 'cmdk') closeCmdk();
+});
+
+// ============ INIT ============
+(function init() {
+  if (authToken && currentUser) {
+    enterApp();
+    // After login, check for SketchUp parts
+    setTimeout(autoLoadSketchUpParts, 500);
+  } else {
+    document.getElementById('landingPage').classList.remove('hidden');
+  }
+})();
+
+console.log('🚀 CutPro Next loaded');
+</script>
+</body>
+</html>
