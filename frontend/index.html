@@ -2264,6 +2264,44 @@ body {
         <span id="themeLabel">Light mode</span>
       </button>
     </div>
+
+    <nav class="sidebar-nav">
+  <a class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
+    <span class="nav-icon">📊</span>
+    <span>Dashboard</span>
+    <span class="kbd">1</span>
+  </a>
+  
+  <a class="nav-item" data-section="optimizations" onclick="switchSection('optimizations')">
+    <span class="nav-icon">📋</span>
+    <span>Optimizations</span>
+    <span class="kbd">2</span>
+  </a>
+  
+  <a class="nav-item" data-section="parts" onclick="switchSection('parts')">
+    <span class="nav-icon">📝</span>
+    <span>Parts</span>
+    <span class="kbd">3</span>
+  </a>
+  
+  <a class="nav-item" data-section="veneer" onclick="switchSection('veneer')">
+    <span class="nav-icon">🪵</span>
+    <span>Veneer</span>
+    <span class="kbd">4</span>
+  </a>
+  
+  <a class="nav-item" data-section="materials" onclick="switchSection('materials')">
+    <span class="nav-icon">🎨</span>
+    <span>Materials</span>
+    <span class="kbd">5</span>
+  </a>
+  
+  <a class="nav-item" data-section="history" onclick="switchSection('history')">
+    <span class="nav-icon">🕒</span>
+    <span>History</span>
+    <span class="kbd">6</span>
+  </a>
+</nav>
   </aside>
 
   <!-- Sidebar Overlay for Mobile -->
@@ -4047,25 +4085,14 @@ function toggleUserMenu() {
 // NAVIGATION SYSTEM
 // ============================================
 function switchSection(name) {
-  console.log('🔄 Switching to section:', name);
-
-  // 1. Hide all sections
   document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
-  
-  // 2. Show target section
   const target = document.getElementById('section-' + name);
-  if (target) {
-    target.classList.remove('hidden');
-  } else {
-    console.error('❌ Section not found: section-' + name);
-  }
+  if (target) target.classList.remove('hidden');
 
-  // 3. Update active state on sidebar buttons
   document.querySelectorAll('.nav-item[data-section]').forEach(el => {
     el.classList.toggle('active', el.dataset.section === name);
   });
 
-  // 4. Update the Page Title
   const titles = { 
     dashboard: 'Dashboard', 
     optimizations: 'Optimizations', 
@@ -4077,10 +4104,16 @@ function switchSection(name) {
   const pageTitle = document.getElementById('pageTitle');
   if (pageTitle) pageTitle.textContent = titles[name] || name;
 
-  // 5. Load History if that tab is clicked
   if (name === 'history') loadHistory();
 }
 
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  
+  if (sidebar) sidebar.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('show');
+}
 // ============================================
 // BIND EVENT LISTENERS
 // ============================================
@@ -6735,25 +6768,6 @@ function showCollisionModal(conflicts) {
 
   document.body.insertAdjacentHTML('beforeend', html);
 }
-
-function renderConflictRow(a, b, label) {
-  return `
-    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--bg-soft); border-radius: 8px; margin-bottom: 8px;">
-      <div style="width: 40px; height: 40px; border-radius: 8px; background: ${a.hex}; border: 1px solid var(--border-strong); flex-shrink: 0;"></div>
-      <div style="flex: 1; min-width: 0;">
-        <div style="font-weight: 600; font-size: 13px;">${escapeHtml(a.materialName)} <span style="color: var(--text-mute); font-weight: 400;">· ${escapeHtml(a.shadeLabel)}</span></div>
-        <div style="font-family: var(--mono); font-size: 11px; color: var(--text-mute);">${a.hex}</div>
-      </div>
-      <div style="font-size: 10px; font-weight: 700; padding: 3px 8px; background: var(--danger-soft); color: var(--danger); border-radius: 4px;">${label}</div>
-      <div style="width: 40px; height: 40px; border-radius: 8px; background: ${b.hex}; border: 1px solid var(--border-strong); flex-shrink: 0;"></div>
-      <div style="flex: 1; min-width: 0;">
-        <div style="font-weight: 600; font-size: 13px;">${escapeHtml(b.materialName)} <span style="color: var(--text-mute); font-weight: 400;">· ${escapeHtml(b.shadeLabel)}</span></div>
-        <div style="font-family: var(--mono); font-size: 11px; color: var(--text-mute);">${b.hex}</div>
-      </div>
-    </div>
-  `;
-}
-
 
 // ============================================
 // FAIL-SAFE NAVIGATION CLICKS
