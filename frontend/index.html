@@ -2902,7 +2902,7 @@ body {
 ============================================ */
 
 // ============ STATE ============
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://cutpro-optimizer.onrender.com/api';
 
 
 
@@ -4043,20 +4043,29 @@ function toggleUserMenu() {
 // ============================================
 // NAVIGATION
 // ============================================
+// ============================================
+// NAVIGATION SYSTEM
+// ============================================
 function switchSection(name) {
-  document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
-  const target = document.getElementById('section-' + name);
-  if (target) target.classList.remove('hidden');
+  console.log('🔄 Switching to section:', name);
 
+  // 1. Hide all sections
+  document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
+  
+  // 2. Show target section
+  const target = document.getElementById('section-' + name);
+  if (target) {
+    target.classList.remove('hidden');
+  } else {
+    console.error('❌ Section not found: section-' + name);
+  }
+
+  // 3. Update active state on sidebar buttons
   document.querySelectorAll('.nav-item[data-section]').forEach(el => {
     el.classList.toggle('active', el.dataset.section === name);
   });
 
-  // 🔥 ADD THIS BLOCK:
-  document.querySelectorAll('.mobile-nav-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.section === name);
-  });
-
+  // 4. Update the Page Title
   const titles = { 
     dashboard: 'Dashboard', 
     optimizations: 'Optimizations', 
@@ -4068,17 +4077,53 @@ function switchSection(name) {
   const pageTitle = document.getElementById('pageTitle');
   if (pageTitle) pageTitle.textContent = titles[name] || name;
 
+  // 5. Load History if that tab is clicked
   if (name === 'history') loadHistory();
 }
 
-// Bind Click Listeners
-document.querySelectorAll('.nav-item[data-section]').forEach(el => {
-  el.addEventListener('click', (e) => {
-    e.preventDefault();
-    switchSection(el.dataset.section);
+// ============================================
+// BIND EVENT LISTENERS
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  
+  // 1. Sidebar Links
+  document.querySelectorAll('.nav-item[data-section]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchSection(el.dataset.section);
+      
+      // Close mobile sidebar if open
+      if (window.innerWidth <= 768) {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (sidebar) sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('show');
+      }
+    });
   });
-});
 
+  // 2. Hamburger Button (Mobile)
+  const hamburger = document.querySelector('.hamburger-btn');
+  if (hamburger) {
+    hamburger.addEventListener('click', () => {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      if (sidebar) sidebar.classList.toggle('open');
+      if (overlay) overlay.classList.toggle('show');
+    });
+  }
+
+  // 3. Overlay Click (Close Mobile Sidebar)
+  const overlay = document.getElementById('sidebarOverlay');
+  if (overlay) {
+    overlay.addEventListener('click', () => {
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar) sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    });
+  }
+
+});
 // ============ STORAGE ============
 function savePartsToStorage() {
   try {
@@ -6708,6 +6753,44 @@ function renderConflictRow(a, b, label) {
     </div>
   `;
 }
+
+
+// ============================================
+// FAIL-SAFE NAVIGATION CLICKS
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. Sidebar buttons
+  document.querySelectorAll('.nav-item[data-section]').forEach(el => {
+    el.onclick = function(e) {
+      e.preventDefault();
+      const section = this.getAttribute('data-section');
+      console.log('Switching to:', section);
+      switchSection(section);
+    };
+  });
+
+  // 2. Hamburger button
+  const hamburger = document.querySelector('.hamburger-btn');
+  if (hamburger) {
+    hamburger.onclick = function(e) {
+      e.preventDefault();
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      if (sidebar) sidebar.classList.toggle('open');
+      if (overlay) overlay.classList.toggle('show');
+    };
+  }
+
+  // 3. Overlay click (to close sidebar)
+  const overlay = document.getElementById('sidebarOverlay');
+  if (overlay) {
+    overlay.onclick = function() {
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar) sidebar.classList.remove('open');
+      this.classList.remove('show');
+    };
+  }
+});
 
 console.log('🚀 CutPro Next loaded');
 </script>
