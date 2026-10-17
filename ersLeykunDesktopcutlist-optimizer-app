@@ -1,0 +1,15 @@
+[33mb6130a8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Add Material Colors system (12 materials × 4 shades)
+[33m05a9c8c[m Ship CutPro Next UI + CORS fix for history
+[33m53fac8c[m Clean print: only header + sheet stats + diagram
+[33ma2717f6[m Print: rotate sheet vertical, remove panels list below
+[33m5abcf1b[m Print: remove top global stats, keep only sheet info
+[33m5f0bc2e[m Print: panels grid wraps into columns of 10
+[33m26e2fb5[m Fix veneer length display
+[33mbc3c92b[m Fix veneer calculation: only count explicitly marked parts
+[33mb62bcd1[m Point all URLs at cloud backend
+[33m02495c2[m Update download to CutPro v3.8
+[33mb0b2cdf[m Fix download: redirect to GitHub Releases
+[33m7dbf289[m Fix download: redirect to GitHub Releases
+[33ma3b5d07[m Fix download: redirect to GitHub Releases
+[33mc9d24f6[m Point frontend to cloud backend
+[33m3ef4788[m Initial CutPro commit

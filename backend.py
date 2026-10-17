@@ -82,6 +82,7 @@ DEFAULT_MATERIALS = mat_colors.DEFAULT_MATERIALS
 
 
 
+
 from mongo_config import client as _mongo_client
 db = _mongo_client['cutpro']
 
@@ -92,7 +93,7 @@ init_material_colors(material_colors_col)
 # Register the material colors routes
 app.register_blueprint(material_colors_bp)
 print("âœ… Material colors endpoints registered")
-
+print("🔥 PACKING VERSION: v2 — smart retry")
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -345,7 +346,7 @@ def api_status():
 def download_cutpro():
     """Redirects to the CutPro package hosted on GitHub Releases."""
     from flask import redirect
-    GITHUB_RELEASE_URL = 'https://github.com/Biruke123/cutpro-optimizer/releases/download/v4.0/CutProSetup_v4.0.exe'
+    GITHUB_RELEASE_URL = 'https://github.com/Biruke123/cutpro-optimizer/releases/download/v5.0/CutProSetup_v5.0.exe'
     print(f"ðŸ“¥ Download requested â†’ redirecting to GitHub Releases")
     return redirect(GITHUB_RELEASE_URL, code=302)
 
@@ -385,30 +386,24 @@ class MaxRectsPacker:
         self.bin_h = bin_h
         self.kerf = kerf
         self.allow_rotation = allow_rotation
-        # free rects: list of [x, y, w, h]
         self.free_rects = [[0, 0, bin_w, bin_h]]
-        self.placements = []  # each: {x, y, w, h, rotated}
+        self.placements = []
 
     def _fits(self, x, y, w, h):
-        """Check if rect (x,y,w,h) fits inside any free rect."""
         for fx, fy, fw, fh in self.free_rects:
             if x >= fx and y >= fy and x + w <= fx + fw and y + h <= fy + fh:
                 return True
         return False
 
     def _score_bssf(self, w, h):
-        """
-        Best Short Side Fit: find the free rect where the leftover
-        on the shorter side is smallest. Returns (best_score, x, y, rotated) or None.
-        """
         best_score = None
         best = None
 
         for fx, fy, fw, fh in self.free_rects:
-            # --- Normal orientation ---
+            # Normal orientation
             if w <= fw and h <= fh:
-                leftover_h = fw - w   # horizontal leftover
-                leftover_v = fh - h   # vertical leftover
+                leftover_h = fw - w
+                leftover_v = fh - h
                 short = min(leftover_h, leftover_v)
                 long_ = max(leftover_h, leftover_v)
                 score = (short, long_)
@@ -416,7 +411,7 @@ class MaxRectsPacker:
                     best_score = score
                     best = (fx, fy, w, h, False)
 
-            # --- Rotated orientation ---
+            # Rotated orientation
             if self.allow_rotation and h <= fw and w <= fh:
                 leftover_h = fw - h
                 leftover_v = fh - w
@@ -430,9 +425,8 @@ class MaxRectsPacker:
         return best
 
     def _split_free_rects(self, placed_x, placed_y, placed_w, placed_h):
-        """Split every free rect that intersects the placed rect."""
         new_rects = []
-        pw, ph = placed_w + self.kerf, placed_h + self.kerf  # include kerf
+        pw, ph = placed_w + self.kerf, placed_h + self.kerf
 
         for fx, fy, fw, fh in self.free_rects:
             # No overlap? keep as-is
@@ -441,17 +435,13 @@ class MaxRectsPacker:
                 new_rects.append([fx, fy, fw, fh])
                 continue
 
-            # Overlap â†’ split into up to 4 sub-rects
-            # Left strip
+            # Overlap → split into up to 4 sub-rects
             if placed_x > fx:
                 new_rects.append([fx, fy, placed_x - fx, fh])
-            # Right strip
             if placed_x + pw < fx + fw:
                 new_rects.append([placed_x + pw, fy, fx + fw - (placed_x + pw), fh])
-            # Top strip
             if placed_y > fy:
                 new_rects.append([fx, fy, fw, placed_y - fy])
-            # Bottom strip
             if placed_y + ph < fy + fh:
                 new_rects.append([fx, placed_y + ph, fw, fy + fh - (placed_y + ph)])
 
@@ -467,134 +457,282 @@ class MaxRectsPacker:
         self.free_rects = cleaned
 
     def insert(self, w, h):
-        """
-        Try to insert a part. Returns placement dict or None if it doesn't fit.
-        """
         best = self._score_bssf(w, h)
         if best is None:
             return None
 
         x, y, pw, ph, rotated = best
 
-        # Record placement
         self.placements.append({
             'x': x, 'y': y,
             'w': pw, 'h': ph,
             'rotated': rotated
         })
 
-        # Split free rects
         self._split_free_rects(x, y, pw, ph)
         return self.placements[-1]
 
 
+# ============================================
+# SMART PACKING — Same-Size Grouping + Multi-Pass
+# ============================================
+def compute_waste_rectangles(free_rects, sheet_width, sheet_height):
+    """Extract meaningful waste rectangles for visualization."""
+    if not free_rects:
+        return []
+    MIN_WASTE_MM = 80
+    candidates = []
+    for r in free_rects:
+        if r[2] >= MIN_WASTE_MM and r[3] >= MIN_WASTE_MM:
+            candidates.append({
+                'x': float(r[0]), 'y': float(r[1]),
+                'w': float(r[2]), 'h': float(r[3]),
+                'area': r[2] * r[3]
+            })
+    candidates.sort(key=lambda c: c['area'], reverse=True)
+    return candidates[:6]
+
+
+
+
+def _pack_one_sheet(parts, sheet_width, sheet_height, kerf, sheet_number):
+    """
+    Pack as many parts as possible onto one sheet.
+    Tries both orientations per part, picks the one that leaves less wasted area.
+    Multi-pass with smallest-first gap filling.
+    """
+    packer = MaxRectsPacker(sheet_width, sheet_height, kerf, allow_rotation=True)
+
+    placed = []
+    remaining = list(parts)
+
+    def try_place(part):
+        """Try both orientations, return the placement with better score."""
+        # Try normal
+        pos_normal = packer._score_bssf(part['w'], part['h'])
+        # Try rotated
+        pos_rotated = packer._score_bssf(part['h'], part['w'])
+
+        # Score: (short_side_leftover, long_side_leftover)
+        if pos_normal and pos_rotated:
+            # Both fit — pick the one with smaller short-side leftover
+            if pos_normal[:2] <= pos_rotated[:2]:
+                best = pos_normal
+                is_rotated = False
+            else:
+                best = pos_rotated
+                is_rotated = True
+        elif pos_normal:
+            best = pos_normal
+            is_rotated = False
+        elif pos_rotated:
+            best = pos_rotated
+            is_rotated = True
+        else:
+            return None
+
+        x, y, pw, ph, _ = best
+        packer.placements.append({
+            'x': x, 'y': y, 'w': pw, 'h': ph, 'rotated': is_rotated
+        })
+        packer._split_free_rects(x, y, pw, ph)
+        return packer.placements[-1], is_rotated
+
+    # PASS 1 — largest first
+    remaining.sort(key=lambda p: -(p['w'] * p['h']))
+    pass1_leftover = []
+    for part in remaining:
+        result = try_place(part)
+        if result:
+            pos, is_rotated = result
+            placed.append({
+                'w': pos['w'], 'h': pos['h'], 'qty': 1,
+                'material': part['material'], 'label': part['label'],
+                'x': pos['x'], 'y': pos['y'], 'rotated': is_rotated
+            })
+        else:
+            pass1_leftover.append(part)
+
+    # PASS 2 — smallest first, fill gaps
+    pass1_leftover.sort(key=lambda p: p['w'] * p['h'])
+    pass2_leftover = []
+    for part in pass1_leftover:
+        result = try_place(part)
+        if result:
+            pos, is_rotated = result
+            placed.append({
+                'w': pos['w'], 'h': pos['h'], 'qty': 1,
+                'material': part['material'], 'label': part['label'],
+                'x': pos['x'], 'y': pos['y'], 'rotated': is_rotated
+            })
+        else:
+            pass2_leftover.append(part)
+
+    used_area = sum(p['w'] * p['h'] for p in placed)
+    sheet_area = sheet_width * sheet_height
+    efficiency = min(100.0, (used_area / sheet_area) * 100) if sheet_area > 0 else 0
+
+    free_rects_copy = [list(r) for r in packer.free_rects]
+
+    return {
+        'sheet_number': sheet_number,
+        'sheet_width': sheet_width,
+        'sheet_height': sheet_height,
+        'sheet_type': 'Standard',
+        'material': placed[0]['material'] if placed else 'MDF',
+        'parts': placed,
+        'used_area': used_area,
+        'waste_area': max(0, sheet_area - used_area),
+        'waste_rectangles': compute_waste_rectangles(free_rects_copy, sheet_width, sheet_height),
+        'waste_percentage': max(0, 100 - efficiency),
+        'efficiency': efficiency
+    }, pass2_leftover
+
+    
 def pack_with_adaptive_sheets(parts, default_width, default_height, kerf):
     """
-    Pack parts using MaxRects. Each sheet is packed independently.
-    Returns list of sheet dicts with parts that are GUARANTEED not to overlap.
+    Use rectpack library for production-grade bin packing.
+    Maps specific veneer edges to the exact part using a dictionary lookup.
     """
+    from rectpack import newPacker, SORT_AREA
+    from rectpack.maxrects import MaxRectsBssf, MaxRectsBaf, MaxRectsBl
+    from rectpack.skyline import SkylineBl
+    from rectpack.guillotine import GuillotineBssfSas
+
     if not parts:
         return []
 
-    # Expand quantities
     all_parts = []
+    part_lookup = {}  # 🔥 Key: rid, Value: exact part dict with edge_bands
+    pid = 0
+    
     for part in parts:
         for _ in range(int(part.get('qty', 1))):
-            all_parts.append({
+            p_data = {
+                'rid': pid,
                 'w': float(part['w']),
                 'h': float(part['h']),
-                'material': part.get('material', '18mm Birch Plywood'),
-                'label': part.get('label', 'Part')
-            })
+                'material': part.get('material', 'MDF'),
+                'label': part.get('label', 'Part'),
+                'has_veneer': bool(part.get('has_veneer', False)),
+                'veneer_edge_count': int(part.get('veneer_edge_count', 0)),
+                'veneer_length_mm': float(part.get('veneer_length_mm', 0)),
+                'edge_bands': part.get('edge_bands', None) # 🔥 PRESERVE EDGES
+            }
+            all_parts.append(p_data)
+            part_lookup[pid] = p_data
+            pid += 1
 
     if not all_parts:
         return []
 
-    # Sort: largest area first (better packing)
-    all_parts.sort(key=lambda p: p['w'] * p['h'], reverse=True)
+    from collections import defaultdict
+    by_material = defaultdict(list)
+    for p in all_parts:
+        by_material[p['material']].append(p)
 
-    results = []
-    sheet_counter = 1
-    max_sheets = 500
+    all_sheets = []
+    sheet_number = 1
 
-    while all_parts and sheet_counter <= max_sheets:
-        packer = MaxRectsPacker(default_width, default_height, kerf, allow_rotation=True)
+    strategies = [
+        ('MaxRectsBssf', MaxRectsBssf),
+        ('MaxRectsBaf', MaxRectsBaf),
+        ('MaxRectsBl', MaxRectsBl),
+        ('SkylineBl', SkylineBl),
+        ('GuillotineBssfSas', GuillotineBssfSas),
+    ]
 
-        placed_on_sheet = []
-        leftover = []
+    for material, material_parts in by_material.items():
+        best_sheets = None
+        best_score = -1
 
-        # First pass: try to place everything
-        for part in all_parts:
-            placement = packer.insert(part['w'], part['h'])
-            if placement:
-                placed_on_sheet.append({
-                    'w': placement['w'],
-                    'h': placement['h'],
-                    'qty': 1,
-                    'material': part['material'],
-                    'label': part['label'],
-                    'x': placement['x'],
-                    'y': placement['y'],
-                    'rotated': placement['rotated']
-                })
-            else:
-                leftover.append(part)
+        for strat_name, pack_algo in strategies:
+            try:
+                packer = newPacker(
+                    rotation=True,
+                    pack_algo=pack_algo,
+                    sort_algo=SORT_AREA
+                )
 
-        # Second pass: try to squeeze leftover parts (rotated) into remaining space
-        still_leftover = []
-        for part in leftover:
-            # Try rotated
-            placement = packer.insert(part['h'], part['w'])
-            if placement:
-                placed_on_sheet.append({
-                    'w': placement['w'],
-                    'h': placement['h'],
-                    'qty': 1,
-                    'material': part['material'],
-                    'label': part['label'],
-                    'x': placement['x'],
-                    'y': placement['y'],
-                    'rotated': True
-                })
-            else:
-                still_leftover.append(part)
+                for p in material_parts:
+                    packer.add_rect(p['w'], p['h'], rid=p['rid'])
 
-        if not placed_on_sheet:
-            # Safety: if nothing fits, break to avoid infinite loop
-            break
+                max_bins = len(material_parts)
+                for _ in range(max_bins):
+                    packer.add_bin(default_width, default_height)
 
-        used_area = sum(p['w'] * p['h'] for p in placed_on_sheet)
-        sheet_area = default_width * default_height
-        efficiency = min(100.0, (used_area / sheet_area) * 100) if sheet_area > 0 else 0
+                packer.pack()
 
-        results.append({
-            'sheet_number': sheet_counter,
-            'sheet_width': default_width,
-            'sheet_height': default_height,
-            'sheet_type': 'Standard',
-            'material': placed_on_sheet[0]['material'] if placed_on_sheet else '18mm Birch Plywood',
-            'parts': placed_on_sheet,
-            'used_area': used_area,
-            'waste_area': max(0, sheet_area - used_area),
-            'waste_percentage': max(0, 100 - efficiency),
-            'efficiency': efficiency
-        })
+                used_bins = [b for b in packer if len(b) > 0]
+                if not used_bins:
+                    continue
 
-        sheet_counter += 1
-        all_parts = still_leftover
+                total_used_area = sum(p['w'] * p['h'] for p in material_parts)
+                total_sheet_area = len(used_bins) * default_width * default_height
+                efficiency = (total_used_area / total_sheet_area) * 100 if total_sheet_area > 0 else 0
+                score = (10000.0 / len(used_bins)) + efficiency
 
-    return results
+                if score > best_score:
+                    best_score = score
+                    sheets = []
 
+                    for sheet_idx, bin_obj in enumerate(used_bins):
+                        parts_on_sheet = []
+                        for rect in bin_obj:
+                            # 🔥 Look up the exact part from the dictionary
+                            original_part = part_lookup[rect.rid]
+                            
+                            parts_on_sheet.append({
+                                'w': rect.width,
+                                'h': rect.height,
+                                'qty': 1,
+                                'material': original_part['material'],
+                                'label': original_part['label'],
+                                'x': rect.x,
+                                'y': rect.y,
+                                'rotated': (rect.width != original_part['w'] or rect.height != original_part['h']),
+                                'has_veneer': original_part['has_veneer'],
+                                'veneer_edge_count': original_part['veneer_edge_count'],
+                                'veneer_length_mm': original_part['veneer_length_mm'],
+                                'edge_bands': original_part['edge_bands'] # 🔥 PASS EDGES BACK
+                            })
+
+                        used_area = sum(p['w'] * p['h'] for p in parts_on_sheet)
+                        sheet_area = default_width * default_height
+                        eff = min(100.0, (used_area / sheet_area) * 100) if sheet_area > 0 else 0
+
+                        sheets.append({
+                            'sheet_number': sheet_number + sheet_idx,
+                            'sheet_width': default_width,
+                            'sheet_height': default_height,
+                            'sheet_type': 'Standard',
+                            'material': material,
+                            'parts': parts_on_sheet,
+                            'used_area': used_area,
+                            'waste_area': max(0, sheet_area - used_area),
+                            'waste_rectangles': [],
+                            'waste_percentage': max(0, 100 - eff),
+                            'efficiency': eff
+                        })
+
+                    best_sheets = sheets
+            except Exception as e:
+                print(f"  ⚠️ Strategy '{strat_name}' failed: {e}")
+                continue
+
+        if best_sheets:
+            all_sheets.extend(best_sheets)
+            sheet_number += len(best_sheets)
+
+    return all_sheets
 
 def analyze_scrap_utilization(sheets, sheet_width, sheet_height):
-    """
-    DISABLED: The old scrap-utilization moved parts between sheets after packing,
-    which is what caused visible overlaps. Removed for accuracy.
-    """
+    """Disabled — kept for compatibility."""
     return sheets
 
+
 # ============================================
-# VENEER CALCULATOR â€” WITH EDGE COLOR DETECTION
+# VENEER CALCULATOR  WITH EDGE COLOR DETECTION
 # ============================================
 
 @app.route('/api/calculate-veneer', methods=['POST', 'OPTIONS'])
@@ -725,8 +863,12 @@ def optimize():
                 expanded_parts.append({
                     'w': float(part.get('length', 0)),
                     'h': float(part.get('width', 0)),
-                    'material': part.get('material', '18mm Birch Plywood'),
-                    'label': part.get('label', 'Part')
+                    'material': part.get('material', 'MDF'),
+                    'label': part.get('label', 'Part'),
+                    'has_veneer': bool(part.get('has_veneer', False)),
+                    'veneer_edge_count': int(part.get('veneer_edge_count', 0)),
+                    'veneer_length_mm': float(part.get('veneer_length_mm', 0)),
+                    'edge_bands': part.get('edge_bands', None) # 🔥 THIS IS THE KEY
                 })
         
         valid_parts = [p for p in expanded_parts if p['w'] > 10 and p['h'] > 10]
@@ -968,16 +1110,22 @@ def parse_skp_file(file_path):
         for p in all_parts:
             w_rounded = round(p['w'] / 5) * 5
             h_rounded = round(p['h'] / 5) * 5
-            key = f"{w_rounded}_{h_rounded}"
+            
+            # 🔥 FIX: Include material AND veneer in the key
+            key = f"{w_rounded}_{h_rounded}_{p['material']}_{p.get('has_veneer', False)}_{p.get('label', 'Part')}"
             
             if key in combined:
                 combined[key]['qty'] += p.get('qty', 1)
             else:
                 combined[key] = {
-                    'w': w_rounded, 'h': h_rounded,
+                    'w': w_rounded, 
+                    'h': h_rounded,
                     'qty': p.get('qty', 1),
-                    'material': p.get('material', default_material),
-                    'label': f'Panel {len(combined)+1}'
+                    'material': p.get('material', 'MDF'),
+                    'label': p.get('label', 'Part'),
+                    'has_veneer': p.get('has_veneer', False),
+                    'veneer_edge_count': p.get('veneer_edge_count', 0),
+                    'veneer_length_mm': p.get('veneer_length_mm', 0)
                 }
         
         filtered_parts = []

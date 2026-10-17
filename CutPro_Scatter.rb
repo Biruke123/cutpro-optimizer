@@ -1,8 +1,8 @@
 # ============================================
-# CutPro Scatter v3.8.0 — Final Production Version
+# CutPro Scatter v3.9.0 — Color Matching Edition
+# - Fetches user's material colors from cloud
+# - Matches any SketchUp color to nearest material
 # - Blue face = veneer
-# - Brown material = Oak, else = MDF
-# - Auto-calculates veneer length by part type
 # ============================================
 
 require 'sketchup.rb'
@@ -13,10 +13,11 @@ require 'json'
 module CutPro
   module Scatter
 
-    VERSION = '3.8.0'
+    VERSION = '3.9.0'
     BACKEND_URL = 'https://cutpro-optimizer.onrender.com'
     MIN_PANEL_FACE_MM = 30
     MAX_3D_THICKNESS_MM = 50
+    COLOR_MATCH_TOLERANCE = 60
 
     # ============================================
     # 🎨 BLUE COLOR DETECTION
@@ -30,47 +31,130 @@ module CutPro
     end
 
     # ============================================
-    # 🎨 BROWN COLOR DETECTION (for Oak material)
+    # 🎨 FETCH USER'S MATERIAL COLORS FROM CLOUD
     # ============================================
-    def self.is_brown?(color)
-      return false if color.nil?
-      r = color.red
-      g = color.green
-      b = color.blue
-      return (r > 100 && r < 220 &&
-              g > 50  && g < 160 &&
-              b < 100 &&
-              r > g && g > b)
+    def self.fetch_material_colors
+      begin
+        uri = URI.parse("#{BACKEND_URL}/api/material-colors")
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = (uri.scheme == 'https')
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE if uri.scheme == 'https'
+        http.open_timeout = 10
+        http.read_timeout = 15
+
+        request = Net::HTTP::Get.new(uri.path)
+        response = http.request(request)
+
+        if response.code == '200'
+          data = JSON.parse(response.body)
+          materials = data['materials'] || []
+          puts "✅ Loaded #{materials.length} materials from cloud"
+          return materials
+        else
+          puts "⚠️ Could not fetch materials (HTTP #{response.code}) — using defaults"
+          return default_materials
+        end
+      rescue => e
+        puts "⚠️ Material fetch failed: #{e.message} — using defaults"
+        return default_materials
+      end
     end
 
     # ============================================
-    # 🎯 DETECT MATERIAL (Brown → Oak, else → MDF)
+    # 📦 FALLBACK DEFAULT MATERIALS
     # ============================================
-    def self.detect_material(part)
+    def self.default_materials
+      [
+        { 'id' => 'oak',      'name' => 'Oak',      'shades' => [{ 'label' => 'Base', 'hex' => '#BE805B' }] },
+        { 'id' => 'walnut',   'name' => 'Walnut',   'shades' => [{ 'label' => 'Base', 'hex' => '#6B3F23' }] },
+        { 'id' => 'teak',     'name' => 'Teak',     'shades' => [{ 'label' => 'Base', 'hex' => '#A5762D' }] },
+        { 'id' => 'mahogany', 'name' => 'Mahogany', 'shades' => [{ 'label' => 'Base', 'hex' => '#7B2D1F' }] },
+        { 'id' => 'cherry',   'name' => 'Cherry',   'shades' => [{ 'label' => 'Base', 'hex' => '#9B4A2C' }] },
+        { 'id' => 'pine',     'name' => 'Pine',     'shades' => [{ 'label' => 'Base', 'hex' => '#E5C88C' }] },
+        { 'id' => 'birch',    'name' => 'Birch',    'shades' => [{ 'label' => 'Base', 'hex' => '#D9C6A3' }] },
+        { 'id' => 'mdf',      'name' => 'MDF',      'shades' => [{ 'label' => 'Base', 'hex' => '#C4A88E' }] },
+        { 'id' => 'melamine', 'name' => 'Melamine', 'shades' => [{ 'label' => 'Base', 'hex' => '#E8DCC4' }] },
+        { 'id' => 'uv_board', 'name' => 'UV Board', 'shades' => [{ 'label' => 'Base', 'hex' => '#F8F9FA' }] },
+        { 'id' => 'plywood',  'name' => 'Plywood',  'shades' => [{ 'label' => 'Base', 'hex' => '#C99A6E' }] },
+        { 'id' => 'bamboo',   'name' => 'Bamboo',   'shades' => [{ 'label' => 'Base', 'hex' => '#D4B57A' }] },
+        { 'id' => 'mdf_gray', 'name' => 'MDF Gray', 'shades' => [{ 'label' => 'Base', 'hex' => '#9E9E9E' }] }
+      ]
+    end
+
+    # ============================================
+    # 🔧 HEX → RGB
+    # ============================================
+    def self.hex_to_rgb(hex)
+      h = hex.gsub('#', '')
+      {
+        'r' => h[0..1].to_i(16),
+        'g' => h[2..3].to_i(16),
+        'b' => h[4..5].to_i(16)
+      }
+    end
+
+    # ============================================
+    # 🔧 COLOR DISTANCE (Euclidean RGB)
+    # ============================================
+    def self.color_distance(r1, g1, b1, r2, g2, b2)
+      Math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2)
+    end
+
+    # ============================================
+    # 🎯 DETECT MATERIAL BY COLOR MATCHING
+    # ============================================
+    def self.detect_material(part, materials)
       color = nil
 
-      # Try group's own material first
       if part.respond_to?(:material) && part.material
-        color = part.material.color
+        c = part.material.color
+        color = { 'r' => c.red, 'g' => c.green, 'b' => c.blue }
       end
 
-      # If no group material, check the first painted face
       if color.nil? && part.respond_to?(:entities)
         begin
           faces = part.entities.grep(Sketchup::Face)
           faces.each do |face|
             if face.material && !is_blue?(face.material.color)
-              color = face.material.color
+              c = face.material.color
+              color = { 'r' => c.red, 'g' => c.green, 'b' => c.blue }
               break
             end
           end
         rescue
-          # ignore
         end
       end
 
-      return 'MDF' if color.nil?
-      is_brown?(color) ? 'Oak' : 'MDF'
+      if color.nil?
+        puts "  ⚠️ Part has no material — defaulting to MDF"
+        return 'MDF'
+      end
+
+      best_match = nil
+      best_distance = Float::INFINITY
+
+      materials.each do |material|
+        (material['shades'] || []).each do |shade|
+          next if shade['hex'].nil?
+          rgb = hex_to_rgb(shade['hex'])
+          dist = color_distance(
+            color['r'], color['g'], color['b'],
+            rgb['r'], rgb['g'], rgb['b']
+          )
+          if dist < best_distance
+            best_distance = dist
+            best_match = material['name']
+          end
+        end
+      end
+
+      if best_distance.nil? || best_distance > COLOR_MATCH_TOLERANCE
+        puts "  ⚠️ RGB(#{color['r']},#{color['g']},#{color['b']}) no match (dist #{best_distance.round(1)}) — MDF"
+        return 'MDF'
+      end
+
+      puts "  ✅ RGB(#{color['r']},#{color['g']},#{color['b']}) → #{best_match} (dist #{best_distance.round(1)})"
+      best_match
     end
 
     # ============================================
@@ -80,15 +164,11 @@ module CutPro
       begin
         faces = part.entities.grep(Sketchup::Face)
         faces.each do |face|
-          if face.material && is_blue?(face.material.color)
-            return true
-          end
-          if face.back_material && is_blue?(face.back_material.color)
-            return true
-          end
+          return true if face.material && is_blue?(face.material.color)
+          return true if face.back_material && is_blue?(face.back_material.color)
         end
         return false
-      rescue => e
+      rescue
         return false
       end
     end
@@ -99,11 +179,11 @@ module CutPro
     def self.calc_veneer_length(part_type, big_dim, mid_dim)
       case part_type
       when "DOOR", "DRAWER"
-        return 2 * (big_dim + mid_dim)   # 4 sides
+        return 2 * (big_dim + mid_dim)
       when "SHELF", "SIDE_PANEL", "TALL_PANEL", "TOE_KICK", "COUNTERTOP"
-        return big_dim                    # 1 side (front)
+        return big_dim
       else
-        return 2 * (big_dim + mid_dim)   # default 4 sides
+        return 2 * (big_dim + mid_dim)
       end
     end
 
@@ -121,51 +201,45 @@ module CutPro
     def self.scatter_and_send
       model = Sketchup.active_model
 
-      # Check file saved
       original_path = model.path
       if original_path.nil? || original_path.empty?
-        UI.messagebox(
-          "⚠️ Please SAVE your model first!\n\n" +
-          "File → Save As → give it a name\n\n" +
-          "Then run CutPro again."
-        )
+        UI.messagebox("⚠️ Please SAVE your model first!\n\nFile → Save As → give it a name\n\nThen run CutPro again.")
         return
       end
 
-      # Check backend
       backend_ok = check_backend
-
       if !backend_ok
         result = UI.messagebox(
           "⚠️ Cannot reach CutPro cloud!\n\n" +
           "Check your internet connection.\n\n" +
-          "Expected server:\n" +
-          "#{BACKEND_URL}\n\n" +
-          "Continue anyway?",
+          "Expected server:\n#{BACKEND_URL}\n\nContinue anyway?",
           MB_YESNO
         )
         return if result != IDYES
       end
 
-      # Permission
+      # Fetch materials
+      puts "🎨 Loading material colors from cloud..."
+      user_materials = fetch_material_colors
+      puts "   #{user_materials.length} materials loaded"
+
       permission = UI.messagebox(
         "📦 CutPro Scatter v#{VERSION}\n\n" +
         "This will:\n" +
         "  1. Create a SAFE copy of your file\n" +
-        "  2. Detect BLUE painted parts (veneer)\n" +
-        "  3. Detect material (Brown=Oak, else=MDF)\n" +
-        "  4. Scatter all parts\n" +
-        "  5. Send to CutPro\n" +
-        "  6. Open browser\n\n" +
-        "🎨 Paint any face of a part BLUE → veneer.\n" +
-        "🟤 Paint part BROWN → Oak.\n" +
-        "⚪ No paint → MDF.\n\n" +
+        "  2. Load your material colors (#{user_materials.length} materials)\n" +
+        "  3. Detect BLUE painted parts (veneer)\n" +
+        "  4. Match colors to materials\n" +
+        "  5. Scatter all parts\n" +
+        "  6. Send to CutPro\n" +
+        "  7. Open browser\n\n" +
+        "🎨 Paint any face BLUE → veneer\n" +
+        "🎨 Other colors match your materials\n\n" +
         "Continue?",
         MB_YESNO
       )
       return if permission != IDYES
 
-      # Create numbered copy
       dir = File.dirname(original_path)
       base = File.basename(original_path, '.skp')
 
@@ -181,16 +255,12 @@ module CutPro
       end
 
       confirm = UI.messagebox(
-        "📁 Original (SAFE):\n" +
-        "   #{File.basename(original_path)}\n\n" +
-        "📄 Copy will be created as:\n" +
-        "   #{File.basename(copy_path)}\n\n" +
-        "Continue?",
+        "📁 Original (SAFE):\n   #{File.basename(original_path)}\n\n" +
+        "📄 Copy will be created as:\n   #{File.basename(copy_path)}\n\nContinue?",
         MB_YESNO
       )
       return if confirm != IDYES
 
-      # Save original then copy
       model.save(original_path) if model.modified?
       result = model.save(copy_path)
 
@@ -204,7 +274,6 @@ module CutPro
       puts "Working: #{File.basename(copy_path)}"
       puts "=" * 60
 
-      # Collect parts
       UI.messagebox("🔍 Scanning model for parts...")
 
       all_parts = []
@@ -215,7 +284,6 @@ module CutPro
         return
       end
 
-      # Scatter + veneer detection
       model.start_operation("CutPro Scatter", true)
 
       grid_columns = 10
@@ -225,8 +293,7 @@ module CutPro
       scattered_count = 0
       veneer_count = 0
       non_veneer_count = 0
-      oak_count = 0
-      mdf_count = 0
+      material_counts = Hash.new(0)
       total_blue_mm = 0
 
       all_parts.each_with_index do |part, index|
@@ -243,18 +310,15 @@ module CutPro
           mid_dim = sorted_dims[1]
           big_dim = sorted_dims[2]
 
-          # Filters
           next if mid_dim < MIN_PANEL_FACE_MM
           next if big_dim < MIN_PANEL_FACE_MM
           next if thin_dim > MAX_3D_THICKNESS_MM
           next if big_dim > 3000
           next if mid_dim > 2500 && big_dim > 2500
 
-          # Detect part type
           part_type = detect_part_type(big_dim, mid_dim, thin_dim)
           next if part_type == 'SOLID_PIECE'
 
-          # Check if part is blue (veneer)
           has_veneer = has_any_blue?(part)
 
           veneer_sides = 0
@@ -269,15 +333,9 @@ module CutPro
             non_veneer_count += 1
           end
 
-          # Detect material
-          material = detect_material(part)
-          if material == 'Oak'
-            oak_count += 1
-          else
-            mdf_count += 1
-          end
+          material = detect_material(part, user_materials)
+          material_counts[material] += 1
 
-          # Position in grid
           row = scattered_count / grid_columns
           col = scattered_count % grid_columns
 
@@ -294,11 +352,9 @@ module CutPro
             part.transform!(transform)
           end
 
-          # Rename
           veneer_tag = has_veneer ? "_V" : ""
           part.name = "PART_#{scattered_count + 1}_#{part_type}#{veneer_tag}"
 
-          # Collect
           parts_data << {
             width: big_dim,
             height: mid_dim,
@@ -329,13 +385,11 @@ module CutPro
       puts "✅ SCATTER COMPLETE"
       puts "=" * 60
       puts "Total panels:     #{scattered_count}"
-      puts "🟤 Oak:           #{oak_count}"
-      puts "⚪ MDF:           #{mdf_count}"
+      material_counts.each { |mat, count| puts "  #{mat}: #{count}" }
       puts "🎨 Veneer parts:  #{veneer_count}"
       puts "📏 Total length:  #{total_blue_m}m"
       puts "=" * 60
 
-      # Send to backend
       sent = false
       if backend_ok && parts_data.length > 0
         sent = send_to_backend(parts_data)
@@ -347,15 +401,13 @@ module CutPro
       end
 
       if sent
-        UI.messagebox(
-          "🎉 SUCCESS!\n\n" +
-          "📊 Panels scattered: #{scattered_count}\n" +
-          "🟤 Oak parts:       #{oak_count}\n" +
-          "⚪ MDF parts:       #{mdf_count}\n" +
-          "🎨 Veneer parts:    #{veneer_count}\n" +
-          "📏 Total length:    #{total_blue_m}m\n\n" +
-          "🌐 Browser opening now..."
-        )
+        summary = "🎉 SUCCESS!\n\n"
+        summary += "📊 Panels scattered: #{scattered_count}\n"
+        material_counts.each { |mat, count| summary += "  • #{mat}: #{count}\n" }
+        summary += "🎨 Veneer parts: #{veneer_count}\n"
+        summary += "📏 Total length: #{total_blue_m}m\n\n"
+        summary += "🌐 Browser opening now..."
+        UI.messagebox(summary)
       else
         UI.messagebox("✅ Panels scattered: #{scattered_count}")
       end
@@ -405,8 +457,9 @@ module CutPro
         uri = URI.parse("#{BACKEND_URL}/api/status")
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = (uri.scheme == 'https')
-        http.open_timeout = 10
-        http.read_timeout = 15
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE if uri.scheme == 'https'
+        http.open_timeout = 15
+        http.read_timeout = 20
         response = http.get(uri.path)
         response.code == '200'
       rescue
@@ -419,6 +472,7 @@ module CutPro
         uri = URI.parse("#{BACKEND_URL}/api/parts-from-sketchup")
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = (uri.scheme == 'https')
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE if uri.scheme == 'https'
         http.open_timeout = 15
         http.read_timeout = 60
 
@@ -448,22 +502,80 @@ unless file_loaded?(__FILE__)
     CutPro::Scatter.scatter_and_send
   }
 
-  submenu.add_separator
+    submenu.add_separator
 
+  submenu.add_item('🧪 Apply Test Colors to Selection') {
+    model = Sketchup.active_model
+    selection = model.selection
+
+    if selection.empty?
+      UI.messagebox("⚠️ Select some parts first (groups/components).")
+    else
+      materials = CutPro::Scatter.fetch_material_colors
+      if materials.empty?
+        UI.messagebox("❌ Could not load materials from CutPro.")
+      else
+        # Map of test materials to apply
+        test_map = {
+          'Oak' => materials.find { |m| m['name'] == 'Oak' },
+          'MDF' => materials.find { |m| m['name'] == 'MDF' },
+          'UV Board' => materials.find { |m| m['name'] == 'UV Board' },
+          'Walnut' => materials.find { |m| m['name'] == 'Walnut' },
+          'Melamine' => materials.find { |m| m['name'] == 'Melamine' }
+        }
+
+        # Cycle through test colors
+        keys = test_map.keys.compact
+        if keys.empty?
+          UI.messagebox("❌ No test materials found in your palette.")
+        else
+          model.start_operation("Apply Test Colors", true)
+          selection.each_with_index do |entity, i|
+            mat_name = keys[i % keys.length]
+            mat_data = test_map[mat_name]
+            next unless mat_data
+            next unless entity.is_a?(Sketchup::Group) || entity.is_a?(Sketchup::ComponentInstance)
+
+            # Create or get SketchUp material
+            hex = mat_data['shades'][0]['hex']
+            rgb = CutPro::Scatter.hex_to_rgb(hex)
+
+            skp_mat = model.materials[mat_name] || model.materials.add(mat_name)
+            skp_mat.color = Sketchup::Color.new(rgb['r'], rgb['g'], rgb['b'])
+
+            # Apply to entity
+            entity.material = skp_mat
+
+            # Also paint the faces
+            if entity.respond_to?(:entities)
+              entity.entities.grep(Sketchup::Face).each do |face|
+                face.material = skp_mat
+                face.back_material = skp_mat
+              end
+            end
+          end
+          model.commit_operation
+          UI.messagebox("✅ Applied test colors to #{selection.length} part(s).\n\nColors cycle: #{keys.join(' → ')}")
+        end
+      end
+    end
+  }
+  
   submenu.add_item('🎨 How to Mark Veneer') {
     UI.messagebox(
       "🎨 HOW TO MARK VENEER\n\n" +
       "1. Select any face of a part\n" +
       "2. Paint it BLUE\n" +
       "3. CutPro will detect it\n\n" +
-      "WHAT HAPPENS:\n" +
-      "  DOOR → veneer on 4 sides\n" +
-      "  SHELF → veneer on 1 side\n" +
-      "  DRAWER → veneer on 4 sides\n\n" +
       "MATERIAL DETECTION:\n" +
-      "  🟤 Brown part → Oak\n" +
-      "  ⚪ Other → MDF\n\n" +
-      "Just paint and CutPro does the rest!"
+      "  Colors are matched to your materials\n" +
+      "  Set colors in the CutPro website:\n" +
+      "  Materials → Edit\n\n" +
+      "  Default mappings:\n" +
+      "  🟤 Brown → Oak\n" +
+      "  ⚪ Gray → MDF\n" +
+      "  ⚪ White → UV Board\n\n" +
+      "  Or add your own in the web app!"
     )
   }
 
@@ -474,6 +586,22 @@ unless file_loaded?(__FILE__)
       UI.messagebox("❌ Cannot reach CutPro cloud\n\n#{CutPro::Scatter::BACKEND_URL}\n\nCheck your internet connection.")
     end
   }
+    submenu.add_item('🎨 Check Material Colors') {
+    materials = CutPro::Scatter.fetch_material_colors
+    if materials.empty?
+      UI.messagebox("❌ No materials loaded.\n\nCheck your internet connection.")
+    else
+      msg = "🎨 Your Material Palette\n\n"
+      msg += "#{materials.length} materials loaded from CutPro:\n\n"
+      materials.each do |m|
+        shades = (m['shades'] || []).map { |s| s['hex'] }.join(', ')
+        msg += "• #{m['name']}\n  #{shades}\n\n"
+      end
+      msg += "Paint these colors in SketchUp and CutPro will match them."
+      UI.messagebox(msg)
+    end
+  }
+
   submenu.add_item('🌐 Open CutPro Website') {
     CutPro::Scatter.open_web_app
   }
@@ -481,7 +609,7 @@ unless file_loaded?(__FILE__)
   submenu.add_separator
 
   submenu.add_item('ℹ️ About CutPro') {
-    UI.messagebox("📐 CutPro v#{CutPro::Scatter::VERSION}")
+    UI.messagebox("📐 CutPro v#{CutPro::Scatter::VERSION}\n🎨 Color-matching edition")
   }
 
   file_loaded(__FILE__)
@@ -489,5 +617,5 @@ end
 
 puts "=" * 60
 puts "✅ CutPro v#{CutPro::Scatter::VERSION} loaded"
-puts "🎨 Blue detection + Brown=Oak / else=MDF"
+puts "🎨 Color matching enabled"
 puts "=" * 60
