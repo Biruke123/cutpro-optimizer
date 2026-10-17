@@ -6624,26 +6624,7 @@ function showSkeleton(containerId, rows = 3) {
   el.innerHTML = html;
 }
 
-function toggleMobileSidebar() {
-  const sidebar = document.querySelector('.sidebar');
-  const overlay = document.getElementById('sidebarOverlay');
-  
-  if (sidebar) {
-    sidebar.classList.toggle('open');
-  }
-  if (overlay) {
-    overlay.classList.toggle('show');
-  }
-}
 
-// Optional: Close the sidebar when a link is clicked on mobile
-document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
-  item.addEventListener('click', () => {
-    if (window.innerWidth <= 768) {
-      toggleMobileSidebar();
-    }
-  });
-});
 
 // ============ INIT ============
 (function init() {
@@ -6670,6 +6651,28 @@ document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
     // Show welcome on first visit
   setTimeout(showWelcome, 800);
 })();
+
+
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  
+  if (sidebar) {
+    sidebar.classList.toggle('open');
+  }
+  if (overlay) {
+    overlay.classList.toggle('show');
+  }
+}
+
+// Optional: Close the sidebar when a link is clicked on mobile
+document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    if (window.innerWidth <= 768) {
+      toggleMobileSidebar();
+    }
+  });
+});
 
 /* ============================================
    COLOR CONFLICT MODAL
