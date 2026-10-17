@@ -1836,8 +1836,13 @@ body {
 /* ============================================
    MOBILE RESPONSIVE
 ============================================ */
+/* ============================================
+   MOBILE DRAWER & NAVIGATION
+============================================ */
+
+/* Hide the hamburger on PC by default */
 .hamburger-btn {
-  display: none;
+  display: none; 
   background: transparent;
   border: none;
   color: var(--text);
@@ -1846,6 +1851,7 @@ body {
   margin-right: 10px;
 }
 
+/* The overlay is hidden on PC */
 .sidebar-overlay {
   display: none;
   position: fixed;
@@ -1854,75 +1860,95 @@ body {
   z-index: 999;
 }
 
+/* --- MOBILE ONLY (Phones / Tablets) --- */
 @media (max-width: 768px) {
+  
+  /* 1. Make the sidebar a hidden drawer */
   .sidebar {
     position: fixed;
     top: 0;
-    left: -280px;
+    left: -280px; /* Hidden off-screen to the left */
     width: 260px;
     height: 100vh;
     z-index: 1000;
     transition: left 0.3s ease;
     box-shadow: 2px 0 12px rgba(0,0,0,0.5);
+    display: flex !important; /* Force flex so it renders when opened */
   }
 
+  /* When opened, slide it in */
   .sidebar.open {
     left: 0;
   }
 
+  /* Show the dark overlay when sidebar is open */
   .sidebar-overlay.show {
     display: block;
   }
 
+  /* 2. Show the hamburger button on mobile */
   .hamburger-btn {
-    display: block;
+    display: flex;
+    align-items: center;
   }
 
-  .main {
-    margin-left: 0 !important;
+  /* 3. Push the main content to full width */
+  .main-content {
+    margin-left: 0 !important; 
     width: 100%;
   }
 
+  /* 4. Adjust padding for mobile */
   .content {
     padding: 16px;
   }
 
+  /* 5. Stack 2-column grids */
   .grid-2 {
     grid-template-columns: 1fr;
   }
 
+  /* 6. Make Material cards fit on phone screens */
   #materialsGrid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+  }
+
+  /* 7. Make tables scrollable */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .parts-table th, .parts-table td {
+    padding: 8px 4px;
+    font-size: 11px;
   }
 }
 
 </style>
 </head>
 <body>
-<!-- Everything else will be in Parts 2 & 3 -->
+<!-- Toast Container -->
 <div id="toast-container"></div>
+
+<!-- Command Palette -->
 <div class="cmdk" id="cmdk">
   <div class="cmdk-panel">
     <input type="text" class="cmdk-input" id="cmdkInput" placeholder="Search commands..." autocomplete="off">
     <div class="cmdk-list" id="cmdkList"></div>
   </div>
 </div>
+
 <!-- ============================================
      LANDING PAGE
 ============================================ -->
 <div id="landingPage" class="landing">
-  <!-- Background effects -->
   <div class="hero-bg"></div>
 
-  <!-- Top Nav -->
   <nav class="landing-nav">
     <div class="brand" style="padding: 0;">
       <div class="brand-logo">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 4h5v16H4z"/>
-          <path d="M11 4h9v4h-9z"/>
-          <path d="M11 12h7v4h-7z"/>
-          <path d="M11 19h9v1h-9z"/>
+          <path d="M4 4h5v16H4z"/><path d="M11 4h9v4h-9z"/><path d="M11 12h7v4h-7z"/><path d="M11 19h9v1h-9z"/>
         </svg>
       </div>
       <div class="brand-name">Cut<span>Pro</span></div>
@@ -1933,7 +1959,6 @@ body {
     </div>
   </nav>
 
-  <!-- Hero -->
   <section class="landing-hero">
     <div class="hero-badge">
       <span class="dot"></span>
@@ -1968,7 +1993,6 @@ body {
       </button>
     </div>
 
-    <!-- Preview mock -->
     <div class="hero-preview">
       <svg viewBox="0 0 1000 562" style="width: 100%; height: 100%;">
         <defs>
@@ -1978,7 +2002,6 @@ body {
           </linearGradient>
         </defs>
         <rect width="1000" height="562" fill="#0c0d10"/>
-        <!-- Fake sidebar -->
         <rect x="0" y="0" width="200" height="562" fill="#08090b"/>
         <rect x="16" y="24" width="24" height="24" rx="6" fill="#0ea5e9"/>
         <rect x="52" y="30" width="80" height="12" rx="3" fill="#1e2026"/>
@@ -1987,122 +2010,71 @@ body {
         <rect x="16" y="140" width="100" height="10" rx="3" fill="#0ea5e9" opacity="0.4"/>
         <rect x="16" y="170" width="120" height="10" rx="3" fill="#1e2026"/>
         <rect x="16" y="200" width="90" height="10" rx="3" fill="#1e2026"/>
-        <!-- Fake topbar -->
         <rect x="200" y="0" width="800" height="60" fill="#08090b"/>
         <rect x="220" y="22" width="200" height="16" rx="4" fill="#1e2026"/>
         <rect x="880" y="18" width="100" height="24" rx="6" fill="#0ea5e9"/>
-        <!-- Fake content: sheet diagram -->
         <rect x="230" y="90" width="740" height="440" rx="10" fill="#0c0d10" stroke="#1e2026"/>
         <rect x="250" y="110" width="700" height="400" fill="none" stroke="#1e2026"/>
-        <!-- Parts -->
         <rect x="255" y="115" width="340" height="240" fill="#0ea5e9" opacity="0.15" stroke="#0ea5e9" stroke-opacity="0.4"/>
         <text x="425" y="235" text-anchor="middle" fill="#0ea5e9" font-family="monospace" font-size="12">SIDE PANEL</text>
         <text x="425" y="255" text-anchor="middle" fill="#0ea5e9" font-family="monospace" font-size="10" opacity="0.7">80.0 × 60.0</text>
-
         <rect x="600" y="115" width="345" height="115" fill="#8b5cf6" opacity="0.15" stroke="#8b5cf6" stroke-opacity="0.4"/>
         <text x="772" y="175" text-anchor="middle" fill="#8b5cf6" font-family="monospace" font-size="12">SHELF</text>
-
         <rect x="600" y="235" width="345" height="120" fill="#22c55e" opacity="0.15" stroke="#22c55e" stroke-opacity="0.4"/>
         <text x="772" y="298" text-anchor="middle" fill="#22c55e" font-family="monospace" font-size="12">DOOR</text>
-
         <rect x="255" y="360" width="690" height="145" fill="#f59e0b" opacity="0.15" stroke="#f59e0b" stroke-opacity="0.4"/>
         <text x="600" y="435" text-anchor="middle" fill="#f59e0b" font-family="monospace" font-size="12">DRAWER × 4</text>
       </svg>
     </div>
   </section>
 
-  <!-- Features -->
   <section class="features" id="features">
     <h2>Everything you need. Nothing you don't.</h2>
     <p class="sub">Built for cabinet makers who'd rather build furniture than fiddle with software.</p>
 
     <div class="feature-grid">
       <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
         <h3>Instant optimization</h3>
         <p>Cutlist in milliseconds, not minutes. Advanced MaxRects algorithm keeps waste under 15%.</p>
       </div>
-
       <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
         <h3>SketchUp plugin</h3>
         <p>One-click install. Sends parts straight from your SketchUp model — no export, no CSV.</p>
       </div>
-
       <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 6v6l4 2"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
         <h3>Edge banding</h3>
         <p>Mark veneer edges right in SketchUp. CutPro calculates total banding length automatically.</p>
       </div>
-
       <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
         <h3>Shop-ready print</h3>
         <p>Print or save PDF. One sheet per page. Labelled. Ready for the workshop floor.</p>
       </div>
-
       <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 7h-9"/>
-            <path d="M14 17H5"/>
-            <circle cx="17" cy="17" r="3"/>
-            <circle cx="7" cy="7" r="3"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></div>
         <h3>Material detection</h3>
         <p>Brown = Oak, gray = MDF. CutPro picks the sheet automatically — no manual setup.</p>
       </div>
-
       <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         <h3>Cloud history</h3>
         <p>Every project saved. Reopen, duplicate, tweak — anywhere, on any device.</p>
       </div>
     </div>
   </section>
 
-  <!-- Download CTA -->
   <section id="downloadSection" style="padding: 60px 24px; text-align: center; position: relative; z-index: 10;">
     <h2 style="font-size: 28px; margin-bottom: 12px;">Download the Windows installer</h2>
     <p style="color: var(--text-soft); margin-bottom: 24px;">Includes the SketchUp plugin + auto-installer.</p>
     <button class="btn btn-primary btn-xl" onclick="downloadCutPro()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download CutPro Setup
     </button>
   </section>
 
-  <!-- Footer -->
   <footer class="landing-footer">
     <div>© 2026 CutPro · Built by BLM</div>
     <div style="display: flex; gap: 16px;">
@@ -2112,7 +2084,6 @@ body {
     </div>
   </footer>
 </div>
-
 
 <!-- ============================================
      MAIN APP (hidden until logged in / demo)
@@ -2124,111 +2095,46 @@ body {
     <div class="brand">
       <div class="brand-logo">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 4h5v16H4z"/>
-          <path d="M11 4h9v4h-9z"/>
-          <path d="M11 12h7v4h-7z"/>
-          <path d="M11 19h9v1h-9z"/>
+          <path d="M4 4h5v16H4z"/><path d="M11 4h9v4h-9z"/><path d="M11 12h7v4h-7z"/><path d="M11 19h9v1h-9z"/>
         </svg>
       </div>
       <div class="brand-name">Cut<span>Pro</span></div>
     </div>
 
-    <div class="nav-group">
-      <div class="nav-label">Workspace</div>
-      <button class="nav-item active" data-section="dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="9"/>
-          <rect x="14" y="3" width="7" height="5"/>
-          <rect x="14" y="12" width="7" height="9"/>
-          <rect x="3" y="16" width="7" height="5"/>
-        </svg>
-        Dashboard
-        <span class="kbd">1</span>
-      </button>
-      <button class="nav-item" data-section="optimizations">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2"/>
-    <line x1="3" y1="9" x2="21" y2="9"/>
-    <line x1="9" y1="21" x2="9" y2="9"/>
-  </svg>
-  Optimizations
-  <span class="kbd">2</span>
-</button>
-      <button class="nav-item" data-section="parts">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="8" y1="6" x2="21" y2="6"/>
-          <line x1="8" y1="12" x2="21" y2="12"/>
-          <line x1="8" y1="18" x2="21" y2="18"/>
-          <line x1="3" y1="6" x2="3.01" y2="6"/>
-          <line x1="3" y1="12" x2="3.01" y2="12"/>
-          <line x1="3" y1="18" x2="3.01" y2="18"/>
-        </svg>
-        Parts
-        <span class="kbd">3</span>
-      </button>
-      <button class="nav-item" data-section="veneer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-        </svg>
-        Veneer
-        <span class="kbd">4</span>
-      </button>
-      <button class="nav-item" data-section="materials">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
-    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
-    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
-    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
-    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
-  </svg>
-  Materials
-  <span class="kbd">5</span>
-</button>
-      <button class="nav-item" data-section="history">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
-        History
-        <span class="kbd">6</span>
-      </button>
-    </div>
+    <nav class="sidebar-nav" style="flex: 1; padding: 16px 12px;">
+      <div class="nav-label" style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); padding: 0 10px 8px; font-weight: 600;">Workspace</div>
+      
+      <a class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
+        <span class="nav-icon">📊</span><span>Dashboard</span><span class="kbd">1</span>
+      </a>
+      <a class="nav-item" data-section="optimizations" onclick="switchSection('optimizations')">
+        <span class="nav-icon">📋</span><span>Optimizations</span><span class="kbd">2</span>
+      </a>
+      <a class="nav-item" data-section="parts" onclick="switchSection('parts')">
+        <span class="nav-icon">📝</span><span>Parts</span><span class="kbd">3</span>
+      </a>
+      <a class="nav-item" data-section="veneer" onclick="switchSection('veneer')">
+        <span class="nav-icon">🪵</span><span>Veneer</span><span class="kbd">4</span>
+      </a>
+      <a class="nav-item" data-section="materials" onclick="switchSection('materials')">
+        <span class="nav-icon">🎨</span><span>Materials</span><span class="kbd">5</span>
+      </a>
+      <a class="nav-item" data-section="history" onclick="switchSection('history')">
+        <span class="nav-icon">🕒</span><span>History</span><span class="kbd">6</span>
+      </a>
 
-    <div class="nav-group">
-      <div class="nav-label">Actions</div>
-      <button class="nav-item" onclick="autoLoadSketchUpParts()">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"/>
-  </svg>
-  Sync SketchUp
-  <span class="kbd">⇧R</span>
-</button>
-      <button class="nav-item" onclick="runOptimization()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
-        Calculate
-        <span class="kbd">⌘↵</span>
-      </button>
-      <button class="nav-item" onclick="printResults()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 6 2 18 2 18 9"/>
-          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-          <rect x="6" y="14" width="12" height="8"/>
-        </svg>
-        Print
-        <span class="kbd">⌘P</span>
-      </button>
-      <button class="nav-item" onclick="openCmdk()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        Command palette
-        <span class="kbd">⌘K</span>
-      </button>
-    </div>
+      <div class="nav-label" style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); padding: 16px 10px 8px; font-weight: 600;">Actions</div>
+      
+      <a class="nav-item" onclick="autoLoadSketchUpParts()">
+        <span class="nav-icon">🔄</span><span>Sync SketchUp</span>
+      </a>
+      <a class="nav-item" onclick="runOptimization()">
+        <span class="nav-icon">⚡</span><span>Calculate</span>
+      </a>
+      <a class="nav-item" onclick="printResults()">
+        <span class="nav-icon">🖨️</span><span>Print</span>
+      </a>
+    </nav>
 
     <div class="sidebar-footer">
       <div class="user-chip" id="userChip" onclick="toggleUserMenu()">
@@ -2238,12 +2144,9 @@ body {
           <div class="user-email" id="userEmail">demo mode</div>
         </div>
       </div>
-            <div class="lang-selector">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0;">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="2" y1="12" x2="22" y2="12"/>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-        </svg>
+      
+      <div class="lang-selector">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         <select id="langSelector" onchange="changeLanguage(this.value)">
           <option value="en">English</option>
           <option value="am">አማርኛ</option>
@@ -2257,107 +2160,47 @@ body {
           <option value="zh">中文</option>
         </select>
       </div>
+
       <button class="nav-item" onclick="toggleTheme()" style="font-size: 12px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <span id="themeLabel">Light mode</span>
       </button>
     </div>
-
-    <nav class="sidebar-nav">
-  <a class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
-    <span class="nav-icon">📊</span>
-    <span>Dashboard</span>
-    <span class="kbd">1</span>
-  </a>
-  
-  <a class="nav-item" data-section="optimizations" onclick="switchSection('optimizations')">
-    <span class="nav-icon">📋</span>
-    <span>Optimizations</span>
-    <span class="kbd">2</span>
-  </a>
-  
-  <a class="nav-item" data-section="parts" onclick="switchSection('parts')">
-    <span class="nav-icon">📝</span>
-    <span>Parts</span>
-    <span class="kbd">3</span>
-  </a>
-  
-  <a class="nav-item" data-section="veneer" onclick="switchSection('veneer')">
-    <span class="nav-icon">🪵</span>
-    <span>Veneer</span>
-    <span class="kbd">4</span>
-  </a>
-  
-  <a class="nav-item" data-section="materials" onclick="switchSection('materials')">
-    <span class="nav-icon">🎨</span>
-    <span>Materials</span>
-    <span class="kbd">5</span>
-  </a>
-  
-  <a class="nav-item" data-section="history" onclick="switchSection('history')">
-    <span class="nav-icon">🕒</span>
-    <span>History</span>
-    <span class="kbd">6</span>
-  </a>
-</nav>
   </aside>
 
   <!-- Sidebar Overlay for Mobile -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
 
-
-  
   <!-- MAIN -->
   <main class="main">
     <header class="topbar">
       <div class="topbar-title">
         <button class="hamburger-btn" onclick="toggleMobileSidebar()">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
-    <line x1="3" y1="12" x2="21" y2="12"></line>
-    <line x1="3" y1="6" x2="21" y2="6"></line>
-    <line x1="3" y1="18" x2="21" y2="18"></line>
-  </svg>
-</button>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
         <h1 id="pageTitle">Dashboard</h1>
         <div class="save-status saved" id="saveStatus">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polyline points="20 6 9 17 4 12"/></svg>
           <span>Saved</span>
         </div>
       </div>
+      
       <span class="badge accent" id="syncBadge" style="margin-left: 8px; font-size: 10.5px;">
         <span class="dot" style="width: 5px; height: 5px; border-radius: 50%; background: var(--success); display: inline-block; animation: pulse 2s infinite;"></span>
-          Live sync
+        Live sync
       </span>
+
       <div class="topbar-actions">
-        <button class="btn btn-ghost btn-icon" onclick="openHelp()" data-tooltip="Help & Guide" style="font-weight: 700; font-size: 14px;">?</button>
-            
-        </button>
-        <button class="btn btn-ghost btn-icon" data-tooltip="Undo — Ctrl+Z" onclick="undo()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 14 4 9 9 4"/>
-            <path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
-          </svg>
-        </button>
-        <button class="btn btn-ghost btn-icon" data-tooltip="Redo — Ctrl+Y" onclick="redo()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="15 14 20 9 15 4"/>
-            <path d="M4 20v-7a4 4 0 0 1 4-4h12"/>
-          </svg>
-        </button>
-        <button class="btn btn-ghost btn-icon" data-tooltip="Command palette — Ctrl+K" onclick="openCmdk()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-        </button>
+        <button class="btn btn-ghost btn-icon" onclick="openHelp()" style="font-weight: 700; font-size: 14px;">?</button>
+        <button class="btn btn-ghost btn-icon" onclick="undo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></button>
+        <button class="btn btn-ghost btn-icon" onclick="redo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg></button>
+        <button class="btn btn-ghost btn-icon" onclick="openCmdk()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
         <button class="btn btn-primary" onclick="runOptimization()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           Calculate
         </button>
       </div>
@@ -2372,10 +2215,10 @@ body {
             <div class="card-body">
               <div class="field-grid">
                 <div class="field">
-  <label>Sheet Width (cm)</label>
-  <input type="number" id="sheetWidth" value="244" step="0.1">
-  <div class="field-hint info">Standard 8×4 ft sheet is 244 cm wide</div>
-</div>
+                  <label>Sheet Width (cm)</label>
+                  <input type="number" id="sheetWidth" value="244" step="0.1">
+                  <div class="field-hint info">Standard 8×4 ft sheet is 244 cm wide</div>
+                </div>
                 <div class="field">
                   <label>Sheet Height (cm)</label>
                   <input type="number" id="sheetHeight" value="122" step="0.1">
@@ -2388,11 +2231,7 @@ body {
                 </div>
                 <div class="field">
                   <label>Unit</label>
-                  <select id="unitSelector">
-                    <option value="cm" selected>cm</option>
-                    <option value="mm">mm</option>
-                    <option value="in">in</option>
-                  </select>
+                  <select id="unitSelector"><option value="cm" selected>cm</option><option value="mm">mm</option><option value="in">in</option></select>
                 </div>
               </div>
               <div class="mt-4" style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -2412,51 +2251,30 @@ body {
             </div>
             <div class="card-body">
               <div class="stat-grid">
-                <div class="stat">
-                  <div class="label">Total Parts</div>
-                  <div class="value accent" id="statParts">0</div>
-                </div>
-                <div class="stat">
-                  <div class="label">Total Area</div>
-                  <div class="value" id="statArea">0.00 m²</div>
-                </div>
-                <div class="stat">
-                  <div class="label">Sheets</div>
-                  <div class="value" id="statSheets">0</div>
-                </div>
-                <div class="stat">
-                  <div class="label">Waste</div>
-                  <div class="value warn" id="statWaste">0%</div>
+                <div class="stat"><div class="label">Total Parts</div><div class="value accent" id="statParts">0</div></div>
+                <div class="stat"><div class="label">Total Area</div><div class="value" id="statArea">0.00 m²</div></div>
+                <div class="stat"><div class="label">Sheets</div><div class="value" id="statSheets">0</div></div>
+                <div class="stat"><div class="label">Waste</div><div class="value warn" id="statWaste">0%</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="resultsContent" class="mt-4">
+          <div id="resultsEmpty" class="card">
+            <div class="card-body">
+              <div class="empty-state" style="padding: 40px 20px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 56px; height: 56px;"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-8"/></svg>
+                <h3>Ready to optimize</h3>
+                <p>Add parts to get started — either send them from SketchUp or add them manually.</p>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                  <button class="btn btn-primary" onclick="autoLoadSketchUpParts()">Sync from SketchUp</button>
+                  <button class="btn btn-ghost" onclick="loadSample()">Load sample data</button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div id="resultsContent" class="mt-4">
-  <div id="resultsEmpty" class="card">
-    <div class="card-body">
-      <div class="empty-state" style="padding: 40px 20px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 56px; height: 56px;">
-          <path d="M3 3v18h18"/>
-          <path d="M7 16l4-4 4 4 4-8"/>
-        </svg>
-        <h3>Ready to optimize</h3>
-        <p>Add parts to get started — either send them from SketchUp or add them manually.</p>
-        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-          <button class="btn btn-primary" onclick="autoLoadSketchUpParts()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
-              <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"/>
-            </svg>
-            Sync from SketchUp
-          </button>
-          <button class="btn btn-ghost" onclick="loadSample()">Load sample data</button>
-        </div>
-      </div>
-    </div>
-  </div>
- 
-</div>
-        
       </div>
 
       <!-- PARTS -->
@@ -2465,51 +2283,33 @@ body {
           <div class="card-header">
             <h2>Parts List</h2>
             <div class="card-actions">
-              <button class="btn btn-ghost btn-sm" onclick="mergeDuplicates()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
-                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-                </svg>
-                Merge
-              </button>
+              <button class="btn btn-ghost btn-sm" onclick="mergeDuplicates()">Merge</button>
               <button class="btn btn-ghost btn-sm" onclick="clearAllParts()">Clear</button>
               <button class="btn btn-primary btn-sm" onclick="addPart()">+ Add Part</button>
             </div>
           </div>
           <div class="card-body">
             <div class="quick-add">
-  <span style="font-size: 16px; display: flex; align-items: center; padding: 0 4px;">⚡</span>
-  <input type="text" id="quickAddInput" placeholder="Quick add: 60x40x4 oak   →   press Enter" onkeydown="if(event.key==='Enter')quickAdd()">
-</div>
+              <span style="font-size: 16px; display: flex; align-items: center; padding: 0 4px;">⚡</span>
+              <input type="text" id="quickAddInput" placeholder="Quick add: 60x40x4 oak   →   press Enter" onkeydown="if(event.key==='Enter')quickAdd()">
+            </div>
             <div style="max-height: 500px; overflow: auto;">
               <table class="parts-table" id="partsTable">
                 <thead>
-                  <tr>
-                    <th style="width: 40px;">#</th>
-                    <th>Width</th>
-                    <th>Length</th>
-                    <th style="width: 70px;">Qty</th>
-                    <th>Material</th>
-                    <th>Label</th>
-                    <th style="width: 40px;"></th>
-                    <th style="width: 40px;"></th>
-                  </tr>
+                  <tr><th style="width: 40px;">#</th><th>Width</th><th>Length</th><th style="width: 70px;">Qty</th><th>Material</th><th>Label</th><th style="width: 40px;"></th><th style="width: 40px;"></th></tr>
                 </thead>
                 <tbody id="partsBody"></tbody>
               </table>
               <div id="partsEmpty" class="empty-state">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-    <line x1="12" y1="22.08" x2="12" y2="12"/>
-  </svg>
-  <h3>No parts yet</h3>
-  <p>Type in the quick-add bar above, or use one of these shortcuts:</p>
-  <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-    <button class="btn btn-ghost btn-sm" onclick="loadSample()">📦 Load sample</button>
-    <button class="btn btn-ghost btn-sm" onclick="autoLoadSketchUpParts()">🔌 Sync SketchUp</button>
-    <button class="btn btn-primary btn-sm" onclick="addPart()">+ Add first part</button>
-  </div>
-</div>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                <h3>No parts yet</h3>
+                <p>Type in the quick-add bar above, or use one of these shortcuts:</p>
+                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                  <button class="btn btn-ghost btn-sm" onclick="loadSample()">📦 Load sample</button>
+                  <button class="btn btn-ghost btn-sm" onclick="autoLoadSketchUpParts()">🔌 Sync SketchUp</button>
+                  <button class="btn btn-primary btn-sm" onclick="addPart()">+ Add first part</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2524,147 +2324,80 @@ body {
           </div>
           <div class="card-body">
             <div class="field-grid">
-              <div class="field">
-                <label>Roll Width (m)</label>
-                <input type="number" id="veneerWidth" value="0.6" step="0.1">
-              </div>
-              <div class="field">
-                <label>Waste Factor (%)</label>
-                <input type="number" id="veneerWaste" value="10">
-                <div class="field-hint info">Add 10% extra for mistakes and cuts</div>
-              </div>
-              <div class="field">
-                <label>Edging Included</label>
-                <select id="veneerEdging">
-                  <option value="no">No</option>
-                  <option value="yes">Yes (+10%)</option>
-                </select>
-              </div>
+              <div class="field"><label>Roll Width (m)</label><input type="number" id="veneerWidth" value="0.6" step="0.1"></div>
+              <div class="field"><label>Waste Factor (%)</label><input type="number" id="veneerWaste" value="10"><div class="field-hint info">Add 10% extra for mistakes and cuts</div></div>
+              <div class="field"><label>Edging Included</label><select id="veneerEdging"><option value="no">No</option><option value="yes">Yes (+10%)</option></select></div>
             </div>
             <div id="veneerResult" class="mt-4"></div>
           </div>
         </div>
       </div>
-<!-- MATERIALS -->
-<div id="section-materials" class="section hidden">
-  <div class="card">
-    <div class="card-header">
-      <div>
-        <h2>Material Colors</h2>
-        <div style="font-size: 12px; color: var(--text-mute); margin-top: 2px;">
-          Each material has 4 shades. Match colors in SketchUp and CutPro will recognize them.
+
+      <!-- MATERIALS -->
+      <div id="section-materials" class="section hidden">
+        <div class="card">
+          <div class="card-header">
+            <div><h2>Material Colors</h2><div style="font-size: 12px; color: var(--text-mute); margin-top: 2px;">Each material has 4 shades. Match colors in SketchUp and CutPro will recognize them.</div></div>
+            <div class="card-actions">
+              <button class="btn btn-ghost btn-sm" onclick="resetMaterialColors()">Reset</button>
+              <button class="btn btn-primary btn-sm" onclick="openAddMaterial()">Add material</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="materialsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;"></div>
+            <div id="materialsEmpty" class="empty-state hidden">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+              <h3>No materials yet</h3>
+              <p>Add a material with its 4 shades to teach CutPro how to detect it in SketchUp.</p>
+              <button class="btn btn-primary btn-sm" onclick="openAddMaterial()">+ Add first material</button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="card-actions">
-        <button class="btn btn-ghost btn-sm" onclick="resetMaterialColors()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
-            <polyline points="1 4 1 10 7 10"/>
-            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-          </svg>
-          Reset
-        </button>
-        <button class="btn btn-primary btn-sm" onclick="openAddMaterial()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Add material
-        </button>
-      </div>
-    </div>
-    <div class="card-body">
-      <div id="materialsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;">
-        <!-- Filled by JS -->
-      </div>
-      <div id="materialsEmpty" class="empty-state hidden">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="13.5" cy="6.5" r=".5"/>
-    <circle cx="17.5" cy="10.5" r=".5"/>
-    <circle cx="8.5" cy="7.5" r=".5"/>
-    <circle cx="6.5" cy="12.5" r=".5"/>
-    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
-  </svg>
-  <h3>No materials yet</h3>
-  <p>Add a material with its 4 shades to teach CutPro how to detect it in SketchUp.</p>
-  <button class="btn btn-primary btn-sm" onclick="openAddMaterial()">+ Add first material</button>
-</div>
-    </div>
-  </div>
-</div>
-      <!-- HISTORY -->
+
       <!-- HISTORY -->
       <div id="section-history" class="section hidden">
         <div class="card">
           <div class="card-header">
             <h2>Your Projects</h2>
             <div class="card-actions">
-              <button class="btn btn-ghost btn-sm" onclick="loadHistory()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
-                  <polyline points="23 4 23 10 17 10"/>
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-                </svg>
-                Refresh
-              </button>
-              <button class="btn btn-danger btn-sm" onclick="clearAllHistory()">
-                Clear all
-              </button>
+              <button class="btn btn-ghost btn-sm" onclick="loadHistory()">Refresh</button>
+              <button class="btn btn-danger btn-sm" onclick="clearAllHistory()">Clear all</button>
             </div>
           </div>
           <div class="card-body" id="historyBody">
             <div class="empty-state">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               <h3>No saved projects yet</h3>
               <p>Every optimization is saved here automatically. Run your first one!</p>
-              <button class="btn btn-primary btn-sm" onclick="switchSection('parts'); loadSample();">
-                Try with sample data
-              </button>
+              <button class="btn btn-primary btn-sm" onclick="switchSection('parts'); loadSample();">Try with sample data</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- OPTIMIZATIONS (Visual Diagrams) -->
-      <!-- OPTIMIZATIONS (Visual Diagrams) -->
-    <div id="section-optimizations" class="section hidden">
-      <div id="optimizationsContent" class="mt-4"></div>
-    </div>
+      <!-- OPTIMIZATIONS -->
+      <div id="section-optimizations" class="section hidden">
+        <div id="optimizationsContent" class="mt-4"></div>
+      </div>
 
-    </div> <!-- This closes .content -->
+    </div> <!-- end .content -->
   </main>
-</div> <!-- This closes .app-shell -->
+</div> <!-- end .app-shell -->
 
-
-<!-- ============================================
-     AUTH MODAL
-============================================ -->
+<!-- AUTH MODAL -->
 <div class="modal" id="authModal">
   <div class="modal-panel">
-    <div class="modal-header">
-      <h2 id="authTitle">Sign in</h2>
-      <button class="modal-close" onclick="closeModal('authModal')">&times;</button>
-    </div>
+    <div class="modal-header"><h2 id="authTitle">Sign in</h2><button class="modal-close" onclick="closeModal('authModal')">&times;</button></div>
     <div class="modal-body">
-      <div class="field mb-4">
-        <label>Username</label>
-        <input type="text" id="authUsername" placeholder="your-username" autocomplete="username">
-      </div>
-      <div class="field mb-4" id="emailField" style="display: none;">
-        <label>Email (optional)</label>
-        <input type="email" id="authEmail" placeholder="you@example.com">
-      </div>
-      <div class="field mb-4">
-        <label>Password</label>
-        <input type="password" id="authPassword" placeholder="At least 6 characters" autocomplete="current-password">
-      </div>
+      <div class="field mb-4"><label>Username</label><input type="text" id="authUsername" placeholder="your-username" autocomplete="username"></div>
+      <div class="field mb-4" id="emailField" style="display: none;"><label>Email (optional)</label><input type="email" id="authEmail" placeholder="you@example.com"></div>
+      <div class="field mb-4"><label>Password</label><input type="password" id="authPassword" placeholder="At least 6 characters" autocomplete="current-password"></div>
       <div id="authMessage" style="font-size: 12.5px; color: var(--danger); min-height: 18px;"></div>
     </div>
     <div class="modal-footer">
       <div style="flex: 1; font-size: 12.5px; color: var(--text-mute); align-self: center;">
-        <span id="authSwitchText">Don't have an account?</span>
-        <a href="#" onclick="toggleAuthMode(event); return false;" style="color: var(--accent); text-decoration: none; font-weight: 500;">Switch</a>
+        <span id="authSwitchText">Don't have an account?</span> <a href="#" onclick="toggleAuthMode(event); return false;" style="color: var(--accent); text-decoration: none; font-weight: 500;">Switch</a>
       </div>
       <button class="btn btn-ghost" onclick="closeModal('authModal')">Cancel</button>
       <button class="btn btn-primary" id="authSubmit" onclick="submitAuth()">Sign in</button>
@@ -2672,39 +2405,20 @@ body {
   </div>
 </div>
 
-</div>
-
-<!-- ============================================
-     EDGE BANDING MODAL
-============================================ -->
+<!-- EDGE BANDING MODAL -->
 <div class="modal" id="edgeBandModal">
   <div class="modal-panel wide">
     <div class="modal-header">
-      <div>
-        <h2>Edge Banding</h2>
-        <div style="font-size: 12px; color: var(--text-mute); margin-top: 2px;">
-          <span id="edgeBandPartLabel">Part</span> · <span id="edgeBandPartSize">0 × 0 cm</span>
-        </div>
-      </div>
+      <div><h2>Edge Banding</h2><div style="font-size: 12px; color: var(--text-mute); margin-top: 2px;"><span id="edgeBandPartLabel">Part</span> · <span id="edgeBandPartSize">0 × 0 cm</span></div></div>
       <button class="modal-close" onclick="closeEdgeBandModal()">&times;</button>
     </div>
-
     <div class="modal-body" style="padding: 8px 22px 4px;">
-      <div class="edge-band-grid" id="edgeBandGrid">
-        <!-- Populated by JS -->
-      </div>
+      <div class="edge-band-grid" id="edgeBandGrid"></div>
       <div style="padding: 14px 0; border-top: 1px solid var(--border-soft); margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <div style="font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.05em;">Total veneer length</div>
-          <div style="font-size: 20px; font-weight: 700; color: var(--accent);" id="edgeBandTotal">0 cm</div>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.05em;">Edges marked</div>
-          <div style="font-size: 20px; font-weight: 700;" id="edgeBandCount">0</div>
-        </div>
+        <div><div style="font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.05em;">Total veneer length</div><div style="font-size: 20px; font-weight: 700; color: var(--accent);" id="edgeBandTotal">0 cm</div></div>
+        <div style="text-align: right;"><div style="font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.05em;">Edges marked</div><div style="font-size: 20px; font-weight: 700;" id="edgeBandCount">0</div></div>
       </div>
     </div>
-
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="clearEdgeBands()">Clear all</button>
       <button class="btn btn-ghost" onclick="selectAllEdgeBands()">Select all</button>
@@ -2716,83 +2430,17 @@ body {
 <!-- HELP MODAL -->
 <div class="modal" id="helpModal">
   <div class="modal-panel wide" style="max-width: 640px;">
-    <div class="modal-header">
-      <h2>Help & Guide <span style="font-size: 13px; color: var(--text-mute); font-weight: 400;">· እርዳታ</span></h2>
-      <button class="modal-close" onclick="closeHelp()">&times;</button>
-    </div>
+    <div class="modal-header"><h2>Help & Guide <span style="font-size: 13px; color: var(--text-mute); font-weight: 400;">· እርዳታ</span></h2><button class="modal-close" onclick="closeHelp()">&times;</button></div>
     <div class="modal-body" style="padding: 0;">
       <div class="help-list">
-        <div class="help-item" onclick="helpGo('send-from-sketchup')">
-          <div class="help-icon">🔌</div>
-          <div class="help-content">
-            <div class="help-title">How do I send parts from SketchUp?</div>
-            <div class="help-sub">Connect SketchUp to CutPro in 3 steps</div>
-          </div>
-          <div class="help-arrow">→</div>
-        </div>
-
-        <div class="help-item" onclick="helpGo('add-parts')">
-          <div class="help-icon">➕</div>
-          <div class="help-content">
-            <div class="help-title">How do I add parts manually?</div>
-            <div class="help-sub">Type or paste part dimensions</div>
-          </div>
-          <div class="help-arrow">→</div>
-        </div>
-
-        <div class="help-item" onclick="helpGo('edge-band')">
-          <div class="help-icon">🎨</div>
-          <div class="help-content">
-            <div class="help-title">How do I mark veneer edges?</div>
-            <div class="help-sub">Tell CutPro which sides need edge banding</div>
-          </div>
-          <div class="help-arrow">→</div>
-        </div>
-
-        <div class="help-item" onclick="helpGo('calculate')">
-          <div class="help-icon">⚡</div>
-          <div class="help-content">
-            <div class="help-title">How do I optimize my cut list?</div>
-            <div class="help-sub">Get the perfect sheet layout</div>
-          </div>
-          <div class="help-arrow">→</div>
-        </div>
-
-        <div class="help-item" onclick="helpGo('print')">
-          <div class="help-icon">🖨️</div>
-          <div class="help-content">
-            <div class="help-title">How do I print my cut sheets?</div>
-            <div class="help-sub">One sheet per page, ready for the shop</div>
-          </div>
-          <div class="help-arrow">→</div>
-        </div>
-
-        <div class="help-item" onclick="helpGo('materials')">
-          <div class="help-icon">🎨</div>
-          <div class="help-content">
-            <div class="help-title">How do I set material colors?</div>
-            <div class="help-sub">Match SketchUp colors to materials</div>
-          </div>
-          <div class="help-arrow">→</div>
-        </div>
-
-        <div class="help-item" onclick="helpGo('installer')">
-          <div class="help-icon">💻</div>
-          <div class="help-content">
-            <div class="help-title">How do I install the Windows app?</div>
-            <div class="help-sub">Download and run the installer</div>
-          </div>
-          <div class="help-arrow">→</div>
-        </div>
-
-        <div class="help-item" onclick="helpGo('shortcuts')">
-          <div class="help-icon">⌨️</div>
-          <div class="help-content">
-            <div class="help-title">Keyboard shortcuts</div>
-            <div class="help-sub">Work faster with hotkeys</div>
-          </div>
-          <div class="help-arrow">→</div>
-        </div>
+        <div class="help-item" onclick="helpGo('send-from-sketchup')"><div class="help-icon">🔌</div><div class="help-content"><div class="help-title">How do I send parts from SketchUp?</div><div class="help-sub">Connect SketchUp to CutPro in 3 steps</div></div><div class="help-arrow">→</div></div>
+        <div class="help-item" onclick="helpGo('add-parts')"><div class="help-icon">➕</div><div class="help-content"><div class="help-title">How do I add parts manually?</div><div class="help-sub">Type or paste part dimensions</div></div><div class="help-arrow">→</div></div>
+        <div class="help-item" onclick="helpGo('edge-band')"><div class="help-icon">🎨</div><div class="help-content"><div class="help-title">How do I mark veneer edges?</div><div class="help-sub">Tell CutPro which sides need edge banding</div></div><div class="help-arrow">→</div></div>
+        <div class="help-item" onclick="helpGo('calculate')"><div class="help-icon">⚡</div><div class="help-content"><div class="help-title">How do I optimize my cut list?</div><div class="help-sub">Get the perfect sheet layout</div></div><div class="help-arrow">→</div></div>
+        <div class="help-item" onclick="helpGo('print')"><div class="help-icon">🖨️</div><div class="help-content"><div class="help-title">How do I print my cut sheets?</div><div class="help-sub">One sheet per page, ready for the shop</div></div><div class="help-arrow">→</div></div>
+        <div class="help-item" onclick="helpGo('materials')"><div class="help-icon">🎨</div><div class="help-content"><div class="help-title">How do I set material colors?</div><div class="help-sub">Match SketchUp colors to materials</div></div><div class="help-arrow">→</div></div>
+        <div class="help-item" onclick="helpGo('installer')"><div class="help-icon">💻</div><div class="help-content"><div class="help-title">How do I install the Windows app?</div><div class="help-sub">Download and run the installer</div></div><div class="help-arrow">→</div></div>
+        <div class="help-item" onclick="helpGo('shortcuts')"><div class="help-icon">⌨️</div><div class="help-content"><div class="help-title">Keyboard shortcuts</div><div class="help-sub">Work faster with hotkeys</div></div><div class="help-arrow">→</div></div>
       </div>
     </div>
   </div>
@@ -2804,56 +2452,13 @@ body {
     <div class="modal-body" style="padding: 32px 28px 20px; text-align: center;">
       <div style="font-size: 48px; margin-bottom: 12px;">👋</div>
       <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Welcome to CutPro</h2>
-      <p style="color: var(--text-soft); font-size: 14px; margin-bottom: 28px; max-width: 460px; margin-left: auto; margin-right: auto;">
-        What would you like to do first?
-      </p>
-
+      <p style="color: var(--text-soft); font-size: 14px; margin-bottom: 28px; max-width: 460px; margin-left: auto; margin-right: auto;">What would you like to do first?</p>
       <div class="welcome-actions">
-        <button class="welcome-card" onclick="welcomePick('sketchup')">
-          <div class="welcome-icon" style="background: var(--accent-soft); color: var(--accent);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-              <path d="M2 17l10 5 10-5"/>
-              <path d="M2 12l10 5 10-5"/>
-            </svg>
-          </div>
-          <div class="welcome-text">
-            <div class="welcome-title">Send from SketchUp</div>
-            <div class="welcome-sub">Use the plugin to send your cabinet parts</div>
-          </div>
-        </button>
-
-        <button class="welcome-card" onclick="welcomePick('manual')">
-          <div class="welcome-icon" style="background: var(--success-soft); color: var(--success);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-          </div>
-          <div class="welcome-text">
-            <div class="welcome-title">Add parts manually</div>
-            <div class="welcome-sub">Type part dimensions by hand</div>
-          </div>
-        </button>
-
-        <button class="welcome-card" onclick="welcomePick('demo')">
-          <div class="welcome-icon" style="background: var(--warn-soft); color: var(--warn);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-          </div>
-          <div class="welcome-text">
-            <div class="welcome-title">Watch the demo</div>
-            <div class="welcome-sub">See CutPro in action with sample data</div>
-          </div>
-        </button>
+        <button class="welcome-card" onclick="welcomePick('sketchup')"><div class="welcome-icon" style="background: var(--accent-soft); color: var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="welcome-text"><div class="welcome-title">Send from SketchUp</div><div class="welcome-sub">Use the plugin to send your cabinet parts</div></div></button>
+        <button class="welcome-card" onclick="welcomePick('manual')"><div class="welcome-icon" style="background: var(--success-soft); color: var(--success);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="welcome-text"><div class="welcome-title">Add parts manually</div><div class="welcome-sub">Type part dimensions by hand</div></div></button>
+        <button class="welcome-card" onclick="welcomePick('demo')"><div class="welcome-icon" style="background: var(--warn-soft); color: var(--warn);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="welcome-text"><div class="welcome-title">Watch the demo</div><div class="welcome-sub">See CutPro in action with sample data</div></div></button>
       </div>
-
-      <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-soft);">
-        <button class="btn btn-ghost btn-sm" onclick="dismissWelcome()">
-          Skip — I'll explore myself
-        </button>
-      </div>
+      <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-soft);"><button class="btn btn-ghost btn-sm" onclick="dismissWelcome()">Skip — I'll explore myself</button></div>
     </div>
   </div>
 </div>
@@ -2861,38 +2466,20 @@ body {
 <!-- HELP DETAIL MODAL -->
 <div class="modal" id="helpDetailModal">
   <div class="modal-panel wide" style="max-width: 560px;">
-    <div class="modal-header">
-      <h2 id="helpDetailTitle">Help</h2>
-      <button class="modal-close" onclick="closeHelpDetail()">&times;</button>
-    </div>
-    <div class="modal-body" id="helpDetailBody">
-      <!-- Filled by JS -->
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeHelpDetail(); openHelp();">← Back</button>
-      <button class="btn btn-primary" onclick="closeHelpDetail()">Got it</button>
-    </div>
+    <div class="modal-header"><h2 id="helpDetailTitle">Help</h2><button class="modal-close" onclick="closeHelpDetail()">&times;</button></div>
+    <div class="modal-body" id="helpDetailBody"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeHelpDetail(); openHelp();">← Back</button><button class="btn btn-primary" onclick="closeHelpDetail()">Got it</button></div>
   </div>
 </div>
 
 <!-- MATERIAL EDIT MODAL -->
 <div class="modal" id="materialEditModal">
   <div class="modal-panel">
-    <div class="modal-header">
-      <h2 id="materialEditTitle">Edit Material</h2>
-      <button class="modal-close" onclick="closeMaterialEdit()">&times;</button>
-    </div>
+    <div class="modal-header"><h2 id="materialEditTitle">Edit Material</h2><button class="modal-close" onclick="closeMaterialEdit()">&times;</button></div>
     <div class="modal-body">
-      <div class="field mb-4">
-        <label>Material Name</label>
-        <input type="text" id="materialEditName" placeholder="e.g. Oak">
-      </div>
-      <div style="font-size: 12px; color: var(--text-mute); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
-        4 Shades
-      </div>
-      <div id="materialEditShades" style="display: grid; gap: 10px;">
-        <!-- 4 rows generated by JS -->
-      </div>
+      <div class="field mb-4"><label>Material Name</label><input type="text" id="materialEditName" placeholder="e.g. Oak"></div>
+      <div style="font-size: 12px; color: var(--text-mute); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">4 Shades</div>
+      <div id="materialEditShades" style="display: grid; gap: 10px;"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-danger" onclick="deleteMaterial()" style="margin-right: auto;">Delete</button>
@@ -2902,31 +2489,18 @@ body {
   </div>
 </div>
 
-<!-- ============================================
-     PRINT CONTAINER — hidden on screen, shown on print
-============================================ -->
+<!-- PRINT CONTAINER -->
 <div id="printContainer"></div>
 
 <!-- SPLIT QUANTITY MODAL -->
 <div class="modal" id="splitQtyModal">
   <div class="modal-panel" style="max-width: 400px;">
-    <div class="modal-header">
-      <h2>How many need veneer?</h2>
-      <button class="modal-close" onclick="closeSplitModal()">&times;</button>
-    </div>
+    <div class="modal-header"><h2>How many need veneer?</h2><button class="modal-close" onclick="closeSplitModal()">&times;</button></div>
     <div class="modal-body" style="padding: 20px 22px;">
-      <p style="color: var(--text-mute); margin-bottom: 16px; font-size: 13px;" id="splitQtyLabel">
-        You have 4 of Door.
-      </p>
-      <div class="field mb-4">
-        <label>Quantity to veneer (out of <span id="splitMaxQty">4</span>)</label>
-        <input type="number" id="splitQtyInput" value="1" min="1" step="1" style="font-size: 20px; padding: 12px; text-align: center; font-weight: bold;">
-      </div>
+      <p style="color: var(--text-mute); margin-bottom: 16px; font-size: 13px;" id="splitQtyLabel">You have 4 of Door.</p>
+      <div class="field mb-4"><label>Quantity to veneer (out of <span id="splitMaxQty">4</span>)</label><input type="number" id="splitQtyInput" value="1" min="1" step="1" style="font-size: 20px; padding: 12px; text-align: center; font-weight: bold;"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeSplitModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="confirmSplitQty()">Split & Veneer</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeSplitModal()">Cancel</button><button class="btn btn-primary" onclick="confirmSplitQty()">Split & Veneer</button></div>
   </div>
 </div>
 
