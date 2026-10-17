@@ -1715,6 +1715,121 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* ============================================
+   MOBILE RESPONSIVE FIXES
+============================================ */
+@media (max-width: 768px) {
+  /* 1. Adjust the main layout */
+  body {
+    font-size: 13px;
+  }
+  .app-shell {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 2. Hide the sidebar and show a bottom nav */
+  .sidebar {
+    display: none !important;
+  }
+
+  /* Create a floating mobile nav */
+  .mobile-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--bg-elev);
+    border-top: 1px solid var(--border);
+    z-index: 999;
+    justify-content: space-around;
+    padding: 10px 0;
+    padding-bottom: env(safe-area-inset-bottom, 10px);
+  }
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--text-mute);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .mobile-nav-item.active {
+    color: var(--accent);
+  }
+  .mobile-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* 3. Fix the topbar */
+  .topbar {
+    padding: 0 16px;
+    height: 50px;
+  }
+  .topbar-title h1 {
+    font-size: 16px;
+  }
+  .topbar-actions .btn span {
+    display: none; /* Hide button text, keep icons */
+  }
+  .topbar-actions .btn {
+    padding: 8px;
+  }
+
+  /* 4. Fix content padding */
+  .content {
+    padding: 16px;
+    padding-bottom: 80px; /* Space for mobile nav */
+  }
+
+  /* 5. Fix grids (stack them) */
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .stat-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  /* 6. Fix Tables */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .parts-table th, .parts-table td {
+    padding: 8px 4px;
+    font-size: 11px;
+  }
+  .parts-table input {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  /* 7. Fix the Optimizations Cards */
+  .card {
+    padding: 12px;
+  }
+  .print-sheet {
+    width: 100%;
+  }
+  
+  /* 8. Fix Canvas (Blueprints) */
+  canvas {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Hide mobile nav on desktop */
+@media (min-width: 769px) {
+  .mobile-nav {
+    display: none !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2084,6 +2199,31 @@ body {
       </button>
     </div>
   </aside>
+
+
+  <!-- MOBILE BOTTOM NAVIGATION -->
+<div class="mobile-nav">
+  <a class="mobile-nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+    Dashboard
+  </a>
+  <a class="mobile-nav-item" data-section="optimizations" onclick="switchSection('optimizations')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+    Optimize
+  </a>
+  <a class="mobile-nav-item" data-section="parts" onclick="switchSection('parts')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    Parts
+  </a>
+  <a class="mobile-nav-item" data-section="veneer" onclick="switchSection('veneer')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
+    Veneer
+  </a>
+  <a class="mobile-nav-item" data-section="materials" onclick="switchSection('materials')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+    Colors
+  </a>
+</div>
 
   <!-- MAIN -->
   <main class="main">
@@ -3859,6 +3999,11 @@ function switchSection(name) {
     el.classList.toggle('active', el.dataset.section === name);
   });
 
+  // 🔥 ADD THIS BLOCK:
+  document.querySelectorAll('.mobile-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.section === name);
+  });
+
   const titles = { 
     dashboard: 'Dashboard', 
     optimizations: 'Optimizations', 
@@ -3867,7 +4012,6 @@ function switchSection(name) {
     materials: 'Materials', 
     history: 'History' 
   };
-  
   const pageTitle = document.getElementById('pageTitle');
   if (pageTitle) pageTitle.textContent = titles[name] || name;
 
