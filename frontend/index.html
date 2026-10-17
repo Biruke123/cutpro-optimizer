@@ -1830,6 +1830,76 @@ body {
   }
 }
 
+/* ============================================
+   MOBILE HAMBURGER & SIDEBAR DRAWER
+============================================ */
+.hamburger-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 6px;
+  margin-right: 10px;
+}
+
+@media (max-width: 768px) {
+  /* Show the hamburger */
+  .hamburger-btn {
+    display: block;
+  }
+
+  /* Turn the sidebar into a sliding drawer */
+  .sidebar {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: -280px; /* Hide it off-screen */
+    width: 260px;
+    height: 100vh;
+    background: var(--bg-soft);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.5);
+  }
+
+  /* When open, slide it in */
+  .sidebar.open {
+    left: 0;
+  }
+
+  /* Add a dark overlay behind the open sidebar */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .sidebar-overlay.show {
+    display: block;
+    opacity: 1;
+  }
+
+  /* Fix the Material grid so it doesn't squish */
+  #materialsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+  }
+
+  /* Remove the bottom nav if we are using the drawer */
+  .mobile-nav {
+    display: none !important;
+  }
+  
+  /* Add space for hamburger */
+  .topbar-title {
+    display: flex;
+    align-items: center;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2200,6 +2270,9 @@ body {
     </div>
   </aside>
 
+  <!-- Sidebar Overlay for Mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
 
   <!-- MOBILE BOTTOM NAVIGATION -->
 <div class="mobile-nav">
@@ -2229,6 +2302,13 @@ body {
   <main class="main">
     <header class="topbar">
       <div class="topbar-title">
+        <button class="hamburger-btn" onclick="toggleMobileSidebar()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</button>
         <h1 id="pageTitle">Dashboard</h1>
         <div class="save-status saved" id="saveStatus">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
@@ -6544,6 +6624,26 @@ function showSkeleton(containerId, rows = 3) {
   el.innerHTML = html;
 }
 
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  
+  if (sidebar) {
+    sidebar.classList.toggle('open');
+  }
+  if (overlay) {
+    overlay.classList.toggle('show');
+  }
+}
+
+// Optional: Close the sidebar when a link is clicked on mobile
+document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    if (window.innerWidth <= 768) {
+      toggleMobileSidebar();
+    }
+  });
+});
 
 // ============ INIT ============
 (function init() {
