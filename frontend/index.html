@@ -1719,115 +1719,70 @@ body {
    MOBILE RESPONSIVE FIXES
 ============================================ */
 @media (max-width: 768px) {
-  /* 1. Adjust the main layout */
-  body {
-    font-size: 13px;
-  }
-  .app-shell {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* 2. Hide the sidebar and show a bottom nav */
+  /* 1. Make the sidebar a sliding drawer */
   .sidebar {
-    display: none !important;
-  }
-
-  /* Create a floating mobile nav */
-  .mobile-nav {
+    position: fixed !important;
+    top: 0;
+    left: -280px !important; /* Hidden by default */
+    width: 260px;
+    height: 100vh;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.5);
     display: flex !important;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: var(--bg-elev);
-    border-top: 1px solid var(--border);
-    z-index: 999;
-    justify-content: space-around;
-    padding: 10px 0;
-    padding-bottom: env(safe-area-inset-bottom, 10px);
-  }
-  .mobile-nav-item {
-    display: flex;
     flex-direction: column;
+  }
+
+  /* 2. When opened, slide it in */
+  .sidebar.open {
+    left: 0 !important;
+  }
+
+  /* 3. Show the dark overlay */
+  .sidebar-overlay.show {
+    display: block !important;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 999;
+  }
+
+  /* 4. Show the hamburger button */
+  .hamburger-btn {
+    display: flex !important;
     align-items: center;
-    gap: 4px;
-    font-size: 10px;
-    color: var(--text-mute);
-    text-decoration: none;
-    cursor: pointer;
-  }
-  .mobile-nav-item.active {
-    color: var(--accent);
-  }
-  .mobile-nav-item svg {
-    width: 20px;
-    height: 20px;
+    justify-content: center;
   }
 
-  /* 3. Fix the topbar */
-  .topbar {
-    padding: 0 16px;
-    height: 50px;
-  }
-  .topbar-title h1 {
-    font-size: 16px;
-  }
-  .topbar-actions .btn span {
-    display: none; /* Hide button text, keep icons */
-  }
-  .topbar-actions .btn {
-    padding: 8px;
+  /* 5. Push main content to full width */
+  .main-content, .main {
+    margin-left: 0 !important;
+    width: 100% !important;
   }
 
-  /* 4. Fix content padding */
-  .content {
-    padding: 16px;
-    padding-bottom: 80px; /* Space for mobile nav */
-  }
-
-  /* 5. Fix grids (stack them) */
+  /* 6. Fix grids for mobile */
   .grid-2 {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
-  .stat-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  
-  /* 6. Fix Tables */
-  .table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .parts-table th, .parts-table td {
-    padding: 8px 4px;
-    font-size: 11px;
-  }
-  .parts-table input {
-    font-size: 12px;
-    padding: 4px;
-  }
-
-  /* 7. Fix the Optimizations Cards */
-  .card {
-    padding: 12px;
-  }
-  .print-sheet {
-    width: 100%;
-  }
-  
-  /* 8. Fix Canvas (Blueprints) */
-  canvas {
-    max-width: 100%;
-    height: auto;
+  #materialsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
   }
 }
 
-/* Hide mobile nav on desktop */
+/* Hide hamburger on PC */
 @media (min-width: 769px) {
-  .mobile-nav {
+  .hamburger-btn {
     display: none !important;
   }
+  .sidebar {
+    position: sticky !important;
+    left: 0 !important;
+  }
+}
+
+/* Overlay hidden on PC */
+.sidebar-overlay {
+  display: none;
 }
 
 /* ============================================
@@ -2355,12 +2310,13 @@ body {
   </aside>
 
   <!-- Sidebar Overlay for Mobile -->
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
 
-  <!-- MAIN -->
-  <main class="main">
+  <!-- 3. MAIN CONTENT -->
+  <main class="main-content">
     <header class="topbar">
       <div class="topbar-title">
+        <!-- 4. HAMBURGER BUTTON -->
         <button class="hamburger-btn" onclick="toggleMobileSidebar()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -2368,6 +2324,7 @@ body {
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
+
         <h1 id="pageTitle">Dashboard</h1>
         <div class="save-status saved" id="saveStatus">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polyline points="20 6 9 17 4 12"/></svg>
@@ -3871,21 +3828,20 @@ function toggleMobileSidebar() {
   const sidebar = document.querySelector('.sidebar');
   const overlay = document.getElementById('sidebarOverlay');
   
-  if (sidebar) sidebar.classList.toggle('open');
-  if (overlay) overlay.classList.toggle('show');
+  if (!sidebar || !overlay) {
+    console.error("Sidebar or overlay missing in HTML!");
+    return;
+  }
+
+  // Toggle the open state
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('show');
 }
-// ============================================
-// BIND EVENT LISTENERS
-// ============================================
+
+// Auto-close sidebar when a link is clicked on mobile
 document.addEventListener('DOMContentLoaded', () => {
-  
-  // 1. Sidebar Links
-  document.querySelectorAll('.nav-item[data-section]').forEach(el => {
-    el.addEventListener('click', (e) => {
-      e.preventDefault();
-      switchSection(el.dataset.section);
-      
-      // Close mobile sidebar if open
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+    item.addEventListener('click', () => {
       if (window.innerWidth <= 768) {
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('sidebarOverlay');
@@ -3894,6 +3850,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+});
 
   // 2. Hamburger Button (Mobile)
   const hamburger = document.querySelector('.hamburger-btn');
