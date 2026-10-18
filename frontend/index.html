@@ -1741,7 +1741,7 @@ body {
   }
 
   /* ... (keep the rest of your mobile styles below) ... */
-  
+
   #syncBadge { display: none !important; }
 
   /* Sidebar Drawer */
@@ -1902,96 +1902,7 @@ body {
 }
 
 /* --- MOBILE ONLY (Phones / Tablets) --- */
-@media (max-width: 768px) {
 
-
-    /* 10. Shrink topbar buttons on mobile */
-  .topbar-actions .btn {
-    padding: 8px !important;
-    min-width: unset !important;
-    width: 36px !important;
-    height: 36px !important;
-  }
-
-  /* Hide the text inside topbar buttons (keep only icons) */
-  .topbar-actions .btn span:not(.dot) {
-    display: none !important;
-  }
-
-  /* Make sure the hamburger and title fit perfectly */
-  .topbar-title {
-    gap: 8px;
-    flex: 1;
-    min-width: 0;
-  }
-
-  .topbar-title h1 {
-    font-size: 15px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  /* 1. Make the sidebar a hidden drawer */
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: -280px; /* Hidden off-screen to the left */
-    width: 260px;
-    height: 100vh;
-    z-index: 1000;
-    transition: left 0.3s ease;
-    box-shadow: 2px 0 12px rgba(0,0,0,0.5);
-    display: flex !important; /* Force flex so it renders when opened */
-  }
-
-  /* When opened, slide it in */
-  .sidebar.open {
-    left: 0;
-  }
-
-  /* Show the dark overlay when sidebar is open */
-  .sidebar-overlay.show {
-    display: block;
-  }
-
-  /* 2. Show the hamburger button on mobile */
-  .hamburger-btn {
-    display: flex;
-    align-items: center;
-  }
-
-  /* 3. Push the main content to full width */
-  .main-content {
-    margin-left: 0 !important; 
-    width: 100%;
-  }
-
-  /* 4. Adjust padding for mobile */
-  .content {
-    padding: 16px;
-  }
-
-  /* 5. Stack 2-column grids */
-  .grid-2 {
-    grid-template-columns: 1fr;
-  }
-
-  /* 6. Make Material cards fit on phone screens */
-  #materialsGrid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
-  }
-
-  /* 7. Make tables scrollable */
-  .table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .parts-table th, .parts-table td {
-    padding: 8px 4px;
-    font-size: 11px;
-  }
-}
 
 /* ============================================
    PROFESSIONAL SIDEBAR CONTROLS
@@ -2144,6 +2055,58 @@ body {
 .nav-item.active .kbd {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+
+/* ============================================
+   MOBILE SCREEN FIT FIX
+============================================ */
+@media (max-width: 768px) {
+  /* 1. Force body and html to fill the screen */
+  html, body {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 2. Force main containers to full width */
+  .app-shell, .main, .main-content {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    display: block !important; /* Override grid layout */
+  }
+
+  /* 3. Adjust content padding so cards don't touch the edges */
+  .content {
+    padding: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 4. Make sure cards and grids are full width */
+  .card, .grid-2, .section, .results-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* 5. Fix the topbar */
+  .topbar {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    padding: 0 12px !important;
+    box-sizing: border-box !important;
+    position: sticky;
+    top: 0;
+  }
 }
 
 </style>
