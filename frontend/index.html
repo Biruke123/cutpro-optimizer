@@ -1924,6 +1924,159 @@ body {
   }
 }
 
+/* ============================================
+   PROFESSIONAL SIDEBAR CONTROLS
+============================================ */
+
+/* Theme Toggle */
+.pro-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+.pro-toggle-row:hover { background: var(--bg-hover); }
+.pro-toggle-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-soft);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pro-toggle-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--border-strong);
+  border-radius: 20px;
+  transition: var(--transition);
+}
+.pro-toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: var(--transition);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.pro-toggle-row.active .pro-toggle-switch {
+  background: var(--accent);
+}
+.pro-toggle-row.active .pro-toggle-switch::after {
+  transform: translateX(16px);
+}
+
+/* Language Selector */
+.pro-lang-select {
+  width: 100%;
+  appearance: none;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  font-family: var(--font);
+  transition: var(--transition);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7180' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.pro-lang-select:hover {
+  border-color: var(--accent);
+  background-color: var(--bg);
+}
+.pro-lang-select option {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+
+
+/* ============================================
+   PREMIUM SIDEBAR NAV
+============================================ */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  padding: 20px 12px 8px;
+  font-weight: 600;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--text-soft);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  position: relative;
+  border: 1px solid transparent;
+}
+
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent-glow);
+}
+
+.nav-item.active svg {
+  color: var(--accent);
+}
+
+.nav-item svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--text-mute);
+  transition: color 0.2s ease;
+}
+
+.nav-item .kbd {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-faint);
+  transition: all 0.2s ease;
+}
+
+.nav-item.active .kbd {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 </style>
 </head>
 <body>
@@ -2101,38 +2254,71 @@ body {
       <div class="brand-name">Cut<span>Pro</span></div>
     </div>
 
-    <nav class="sidebar-nav" style="flex: 1; padding: 16px 12px;">
-      <div class="nav-label" style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); padding: 0 10px 8px; font-weight: 600;">Workspace</div>
+        <nav class="sidebar-nav" style="flex: 1; padding: 16px 12px;">
+      <div class="nav-label">Workspace</div>
       
       <a class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
-        <span class="nav-icon">📊</span><span>Dashboard</span><span class="kbd">1</span>
-      </a>
-      <a class="nav-item" data-section="optimizations" onclick="switchSection('optimizations')">
-        <span class="nav-icon">📋</span><span>Optimizations</span><span class="kbd">2</span>
-      </a>
-      <a class="nav-item" data-section="parts" onclick="switchSection('parts')">
-        <span class="nav-icon">📝</span><span>Parts</span><span class="kbd">3</span>
-      </a>
-      <a class="nav-item" data-section="veneer" onclick="switchSection('veneer')">
-        <span class="nav-icon">🪵</span><span>Veneer</span><span class="kbd">4</span>
-      </a>
-      <a class="nav-item" data-section="materials" onclick="switchSection('materials')">
-        <span class="nav-icon">🎨</span><span>Materials</span><span class="kbd">5</span>
-      </a>
-      <a class="nav-item" data-section="history" onclick="switchSection('history')">
-        <span class="nav-icon">🕒</span><span>History</span><span class="kbd">6</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="9"></rect>
+          <rect x="14" y="3" width="7" height="5"></rect>
+          <rect x="14" y="12" width="7" height="9"></rect>
+          <rect x="3" y="16" width="7" height="5"></rect>
+        </svg>
+        <span>Dashboard</span>
+        <span class="kbd">1</span>
       </a>
 
-      <div class="nav-label" style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); padding: 16px 10px 8px; font-weight: 600;">Actions</div>
-      
-      <a class="nav-item" onclick="autoLoadSketchUpParts()">
-        <span class="nav-icon">🔄</span><span>Sync SketchUp</span>
+      <a class="nav-item" data-section="optimizations" onclick="switchSection('optimizations')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+          <line x1="3" y1="9" x2="21" y2="9"></line>
+          <line x1="9" y1="21" x2="9" y2="9"></line>
+        </svg>
+        <span>Optimizations</span>
+        <span class="kbd">2</span>
       </a>
-      <a class="nav-item" onclick="runOptimization()">
-        <span class="nav-icon">⚡</span><span>Calculate</span>
+
+      <a class="nav-item" data-section="parts" onclick="switchSection('parts')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <line x1="3" y1="6" x2="3.01" y2="6"></line>
+          <line x1="3" y1="12" x2="3.01" y2="12"></line>
+          <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+        <span>Parts</span>
+        <span class="kbd">3</span>
       </a>
-      <a class="nav-item" onclick="printResults()">
-        <span class="nav-icon">🖨️</span><span>Print</span>
+
+      <a class="nav-item" data-section="veneer" onclick="switchSection('veneer')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5"></path>
+        </svg>
+        <span>Veneer</span>
+        <span class="kbd">4</span>
+      </a>
+
+      <a class="nav-item" data-section="materials" onclick="switchSection('materials')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+        </svg>
+        <span>Materials</span>
+        <span class="kbd">5</span>
+      </a>
+
+      <a class="nav-item" data-section="history" onclick="switchSection('history')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>History</span>
+        <span class="kbd">6</span>
       </a>
     </nav>
 
